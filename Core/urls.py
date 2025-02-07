@@ -3,10 +3,12 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('jogo/', views.jogo, name='jogo'),
     path('spin/', views.spin, name='spin'),
-    path('creditos/',views.creditos, name='creditos')
+    path('creditos/',views.creditos, name='creditos'),
+    path('convert-credits/', views.convert_credits, name='convert_credits'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

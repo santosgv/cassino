@@ -97,7 +97,7 @@
 
     {% block 'body' %}
 <body>
-    <div class="slot-machine">
+    <div class="slot-machine" style="margin-top: 15px;">
         <div class="credits" id="credits" style="color: #fff;">Créditos: {{credits}}</div> <!-- Exibir créditos -->
         <div class="message" id="message"></div> <!-- Mensagem abaixo dos slots -->
         <div class="slots">
@@ -139,95 +139,111 @@
     </div>
 
     <script>
-     const emojis = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'];
-const slotContainers = document.querySelectorAll('.emoji-container');
-let credits = {{ credits }}; // Inicializa os créditos com o valor do template
-
-// Função para girar o Caça-Níquel
-function spin() {
-    if (credits < 1) {
-        alert('Créditos insuficientes!');
-        return;
-    }
-
-    // Limpar mensagem anterior
-    document.getElementById('message').textContent = '';
-
-    // Iniciar a animação de rolagem
-    startSpinAnimation();
-
-    // Enviar requisição para o backend
-    fetch('/spin/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'  // Adicione o token CSRF se necessário
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            // Atualizar créditos
-            credits = data.credits;
-            document.getElementById('credits').textContent = `Créditos: ${credits}`;
-
-            // Parar cada slot progressivamente
-            stopSpinAnimation(data.results, 0, 3000);  // Primeiro slot para em 3s
-            stopSpinAnimation(data.results, 1, 6000);  // Segundo slot para em 6s
-            stopSpinAnimation(data.results, 2, 9000);  // Terceiro slot para em 9s
-
-            // Exibir mensagem final após a rolagem completa
-            setTimeout(() => {
-                document.getElementById('message').textContent = data.message;
-
-                // Disparar confete se o jogador ganhou
-                if (data.message === "Você ganhou!") {
-                    confetti({
-                        particleCount: 150,
-                        spread: 100,
-                        origin: { y: 0.6 },
-                        colors: ['#ff0000', '#00ff00', '#0000ff']
-                    });
-                }
-            }, 9500); // Pequeno atraso para garantir que a animação terminou
-        }
-    });
-}
-
-// Função para iniciar a animação de rolagem
-function startSpinAnimation() {
-    slotContainers.forEach(container => {
-        let currentPosition = 0;
-        const animationInterval = setInterval(() => {
-            currentPosition -= 120; // Move para o próximo emoji
-            container.style.top = `${currentPosition}px`;
-
-            // Verifica se chegou ao final da lista
-            if (currentPosition <= -720) {
-                currentPosition = 0;
-                container.style.top = `${currentPosition}px`;
+        const emojis = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'];
+        const slotContainers = document.querySelectorAll('.emoji-container');
+        const leverButton = document.querySelector('.lever'); // Botão de girar
+        let credits = {{ credits }}; // Inicializa os créditos com o valor do template
+        let isSpinning = false; // Variável para controlar o estado da rolagem
+    
+        // Função para girar o Caça-Níquel
+        function spin() {
+            if (isSpinning) {
+                return; // Impede múltiplos cliques durante a rolagem
             }
-        }, 100);
-
-        container.animationInterval = animationInterval; // Salva a referência da animação para parar depois
-    });
-}
-
-// Função para parar a rolagem no resultado correto, com atraso progressivo
-function stopSpinAnimation(results, index, delay) {
-    setTimeout(() => {
-        const container = slotContainers[index];
-        clearInterval(container.animationInterval); // Para a animação
-
-        // Determina o índice do emoji correto
-        const resultIndex = emojis.indexOf(results[index]);
-
-        // Posiciona no emoji correto
-        container.style.top = `${-resultIndex * 120}px`;
-    }, delay);
-}
+    
+            if (credits < 1) {
+                alert('Créditos insuficientes!');
+                return;
+            }
+    
+            // Desabilita o botão durante a rolagem
+            isSpinning = true;
+            leverButton.disabled = true;
+    
+            // Limpar mensagem anterior
+            document.getElementById('message').textContent = '';
+    
+            // Iniciar a animação de rolagem
+            startSpinAnimation();
+    
+            // Enviar requisição para o backend
+            fetch('/spin/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // Adicione o token CSRF se necessário
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    isSpinning = false; // Reabilita o botão em caso de erro
+                    leverButton.disabled = false;
+                } else {
+                    // Atualizar créditos
+                    credits = data.credits;
+                    document.getElementById('credits').textContent = `Créditos: ${credits}`;
+    
+                    // Parar cada slot progressivamente
+                    stopSpinAnimation(data.results, 0, 3000);  // Primeiro slot para em 3s
+                    stopSpinAnimation(data.results, 1, 6000);  // Segundo slot para em 6s
+                    stopSpinAnimation(data.results, 2, 9000);  // Terceiro slot para em 9s
+    
+                    // Exibir mensagem final após a rolagem completa
+                    setTimeout(() => {
+                        document.getElementById('message').textContent = data.message;
+    
+                        // Disparar confete se o jogador ganhou
+                        if (data.message === "Você ganhou!") {
+                            confetti({
+                                particleCount: 150,
+                                spread: 100,
+                                origin: { y: 0.6 },
+                                colors: ['#ff0000', '#00ff00', '#0000ff']
+                            });
+                        }
+    
+                        // Reabilita o botão após a rolagem terminar
+                        isSpinning = false;
+                        leverButton.disabled = false;
+                    }, 9500); // Pequeno atraso para garantir que a animação terminou
+                }
+            });
+        }
+    
+        // Função para iniciar a animação de rolagem
+        function startSpinAnimation() {
+            slotContainers.forEach(container => {
+                let currentPosition = 0;
+                const animationInterval = setInterval(() => {
+                    currentPosition -= 120; // Move para o próximo emoji
+                    container.style.top = `${currentPosition}px`;
+    
+                    // Verifica se chegou ao final da lista
+                    if (currentPosition <= -720) {
+                        currentPosition = 0;
+                        container.style.top = `${currentPosition}px`;
+                    }
+                }, 100);
+    
+                container.animationInterval = animationInterval; // Salva a referência da animação para parar depois
+            });
+        }
+    
+        // Função para parar a rolagem no resultado correto, com atraso progressivo
+        function stopSpinAnimation(results, index, delay) {
+            setTimeout(() => {
+                const container = slotContainers[index];
+                clearInterval(container.animationInterval); // Para a animação
+    
+                // Determina o índice do emoji correto
+                const resultIndex = emojis.indexOf(results[index]);
+    
+                // Posiciona no emoji correto
+                container.style.top = `${-resultIndex * 120}px`;
+            }, delay);
+        }
     </script>
 </body>
 {% endblock %}

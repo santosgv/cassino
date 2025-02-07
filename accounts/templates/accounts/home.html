@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block 'title' %}
+    Home
+    {% endblock %}
+    {% block 'head' %}
+    {% endblock %}
+
+    {% block 'body' %}
+<body class="container pagina">
+<h1>💰 Sistema de Pagamento Baseado nos Créditos 💰</h1>
+<br>
+<table class="table table-striped text-center">
+    <thead>
+      <tr>
+        <th scope="col">Símbolo Acertado (3 iguais)</th>
+        <th scope="col">Multiplicador de Créditos</th>
+        <th scope="col">Valor em Dinheiro (baseado no crédito de R$ 1,00)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>🍒🍒🍒 Cerejas</td>
+        <td>2x</td>
+        <td>R$ 2,00</td>
+      </tr>
+      <tr>
+        <td>🍋🍋🍋 Limões</td>
+        <td>5x</td>
+        <td>R$ 5,00</td>
+      </tr>
+      <tr>
+        <td>🍊🍊🍊 Laranjas</td>
+        <td>10x</td>
+        <td>R$ 10,00</td>
+      </tr>
+      <tr>
+        <td>🍇🍇🍇 Uvas</td>
+        <td>20x</td>
+        <td>R$ 20,00</td>
+      </tr>
+      <tr>
+        <td>🔔🔔🔔 Sinos</td>
+        <td>50x</td>
+        <td>R$ 50,00</td>
+      </tr>
+      <tr>
+        <td>⭐⭐⭐ Estrelas</td>
+        <td>100x</td>
+        <td>R$ 100,00</td>
+      </tr>
+      <tr>
+        <td>7️⃣7️⃣7️⃣ Sorte!</td>
+        <td>500x</td>
+        <td>R$ 500,00</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5>🔥 Regras do Pagamento
+    O jogador pode acumular prêmios e sacar quando atingir um valor mínimo R$ 50,00.
+    Os pagamentos podem ser feitos via Pix, PayPal ou transferência bancária.</h5>
+    <br>
+    <div class="text-center">
+        <a type="button" href="{% url 'jogo' %}" class="btn btn-outline-success">Jogar Agora 🎰</a>
+    </div>
+</body>
+<style>
+    .pagina{
+        text-align: center;
+        align-content: center;
+    }
+</style>
+{% endblock %}
