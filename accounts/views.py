@@ -32,7 +32,7 @@ def user_login(request):
             if user is not None:
                 login(request, user)  # Faz o login
                 messages.success(request, f'Bem-vindo, {username}!')
-                return redirect('/accounts/')  # Redireciona para a página inicial
+                return redirect('/')  # Redireciona para a página inicial
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
@@ -41,4 +41,4 @@ def user_login(request):
 def user_logout(request):
     logout(request)  # Faz o logout
     messages.success(request, 'Você foi desconectado com sucesso.')
-    return redirect('/accounts/')  # Redireciona para a página inicial
+    return redirect('/')  # Redireciona para a página inicial
