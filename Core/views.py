@@ -36,7 +36,7 @@ def spin(request):
         2: [70, 20, 5, 3, 1, 0.5, 0.5],          # Nível 2: 90% de chances de 5x, poucos prêmios maiores  
         3: [50, 30, 10, 5, 3, 1.5, 0.5],             # Nível 3: Equilibrado
         4: [30, 30, 20, 10, 5, 3, 2],          # Nível 4: Difícil ganhar qualquer coisa além de 2x e 5x  
-        5: [20, 25, 15, 10, 10, 10, 10],          # Nível 5: Mais chances de ganhar os prêmios altos
+        5: [25, 20, 15, 10, 10, 10, 10],          # Nível 5: Mais chances de ganhar os prêmios altos
     }
 
 

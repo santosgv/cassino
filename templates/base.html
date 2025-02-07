@@ -48,12 +48,15 @@
                     top: 0;
                     left: 0;
                     width: 100%;
-                    background-color: #333;
-                    color: white;
+                    height: 180px;
+                    background-color: #1A1A1A;
+                    color: #FFD700;
                     padding: 10px 20px;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    font-size: larger;
+                    font-family: Georgia, 'Times New Roman', Times, serif;
                     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
                     z-index: 1000;
                 }
@@ -67,18 +70,15 @@
                 .navbar a:hover {
                     text-decoration: none;
                 }
-
               
                 body{
                     background-color: #f0f0f0;
                     height: 100vh;
-                    margin-top: 100px;
+                    padding-top: 180px;
                     align-items: center;
                     justify-content: center;
 
         }
-
-
                 </style>
 
     {% block 'head' %}
@@ -97,8 +97,9 @@
                 Bem-vindo, {{ user.username }}!
             </a>
             <div class="dropdown-menu">
-              <a class="nav-link" style="color: #002bff;" href="{% url 'jogo' %}">Jogar</a>
-              <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" >Converter</a>
+              <a class="nav-link" style="color: #002bff;" href="{% url 'jogo' %}"><img width="30" height="30" src="https://img.icons8.com/emoji/48/slot-machine-emoji--v2.png" alt="slot-machine-emoji--v2"/> Jogar</a>
+              <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/currency-exchange-emoji.png" alt="currency-exchange-emoji"/> Converter</a>
+              <a class="nav-link" style="color: #002bff;" href="#" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
               <div class="dropdown-divider"></div>
               <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:logout' %}" >Sair</a>
             </div>
