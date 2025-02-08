@@ -69,11 +69,7 @@ def user_logout(request):
 
 @login_required
 def request_withdrawal(request):
-    try:
-        affiliate = Affiliate.objects.get(user=request.user)
-    except Affiliate.DoesNotExist:
-        messages.error(request, "Você não possui afiliados.")
-        return redirect('/')
+    affiliate = Affiliate.objects.get(user=request.user)
 
     if request.method == "POST":
         amount = Decimal(request.POST["amount"])  # Convertendo para Decimal

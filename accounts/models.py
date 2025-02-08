@@ -5,7 +5,7 @@ import uuid
 class Affiliate(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     referral_code = models.UUIDField(default=uuid.uuid4, unique=True)
-    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10)  # Percentual de comissão
+    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=5)  # Percentual de comissão
     total_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     referral_link = models.URLField(blank=True)
 

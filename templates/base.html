@@ -100,14 +100,14 @@
               <a class="nav-link" style="color: #002bff;" href="{% url 'jogo' %}"><img width="30" height="30" src="https://img.icons8.com/emoji/48/slot-machine-emoji--v2.png" alt="slot-machine-emoji--v2"/> Jogar</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/currency-exchange-emoji.png" alt="currency-exchange-emoji"/> Converter</a>
               <a class="nav-link" style="color: #002bff;" href="#" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
-            
-              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:request_withdrawal' %}">Afiliados</a>
-              
+              {% if user.usercredit.is_affiliate %}
+              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:request_withdrawal' %}"><img width="30" height="30" src="https://img.icons8.com/external-flaticons-flat-flat-icons/64/external-affiliate-live-streaming-flaticons-flat-flat-icons-2.png" alt="external-affiliate-live-streaming-flaticons-flat-flat-icons-2"/> Afiliados</a>
+              {%endif%}
               {% if request.user.is_staff %}
-              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:manage_withdrawals' %}">Gerenciar Saques</a>
+              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:manage_withdrawals' %}"><img width="30" height="30" src="https://img.icons8.com/external-nawicon-flat-nawicon/64/external-Pay-Day-money-management-nawicon-flat-nawicon.png" alt="external-Pay-Day-money-management-nawicon-flat-nawicon"/> Gerenciar Saques</a>
               {% endif %}
               <div class="dropdown-divider"></div>
-              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:logout' %}" >Sair</a>
+              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:logout' %}" ><img width="30" height="30" src="https://img.icons8.com/fluency/48/emergency-exit.png" alt="emergency-exit"/> Sair</a>
             </div>
           </li>
           <span style="color:rgb(224, 162, 5);">Saldo: R$ {{ user.usercredit.balance|floatformat:2 }}</span>

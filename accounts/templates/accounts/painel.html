@@ -37,7 +37,7 @@ Painel do Afiliado
             <td>{{ withdrawal.requested_at }}</td>
             <td>
                 {% if withdrawal.status == "Pendente" %}
-                <span class="badge badge-warning">Aguardando aprovação</span>
+                <span style="color: rgb(5, 5, 5);"class="badge badge-warning">Aguardando aprovação</span>
                 {% else %}
                 <span class="text-muted">Finalizado</span>
                 {% endif %}
