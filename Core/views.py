@@ -6,7 +6,7 @@ from .models import UserCredit
 from django.contrib import messages
 
 
-@login_required(login_url='/accounts/login/')  
+@login_required(login_url='/login/')  
 def jogo(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
 

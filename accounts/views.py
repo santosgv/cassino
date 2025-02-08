@@ -1,8 +1,18 @@
-from django.shortcuts import render, redirect
+from datetime import timezone
+from django.utils import timezone
+from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from Core.models import UserCredit
+from .models import Affiliate, Referral, Withdrawal
+from django.contrib.admin.views.decorators import staff_member_required
+
+
+
+MIN_WITHDRAWAL = 10  # Valor mínimo para saque
+WITHDRAWAL_FEE = 0.05  # Taxa de 5%
 
 
 def home(request):
@@ -10,11 +20,23 @@ def home(request):
 
 # View para cadastro de usuário
 def register(request):
+    ip_address = request.META.get("REMOTE_ADDR")
+    ref_code = request.GET.get("ref")
+    affiliate = None
+    if ref_code:
+        affiliate = get_object_or_404(Affiliate, referral_code=ref_code)
+
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()  # Cria o usuário
+            user = form.save()  # Cria o usuário
             username = form.cleaned_data.get('username')
+
+            if affiliate:
+                Referral.objects.create(affiliate=affiliate,ip_address=ip_address,referred_user=user)
+                affiliate.total_commission += 10  # Exemplo de comissão fixa
+                affiliate.save()
+
             messages.success(request, f'Conta criada com sucesso para {username}!')
             return redirect('/')  # Redireciona para a página de login
     else:
@@ -42,3 +64,67 @@ def user_logout(request):
     logout(request)  # Faz o logout
     messages.success(request, 'Você foi desconectado com sucesso.')
     return redirect('/')  # Redireciona para a página inicial
+
+
+@login_required
+def request_withdrawal(request):
+    affiliate = Affiliate.objects.get(user=request.user)
+
+    if request.method == "POST":
+        amount = float(request.POST["amount"])
+
+        if amount < MIN_WITHDRAWAL:
+            messages.error(request, f"O valor mínimo para saque é R$ {MIN_WITHDRAWAL:.2f}")
+            return redirect("/")
+
+        if amount > affiliate.total_commission:
+            messages.error(request, "Saldo insuficiente para saque.")
+            return redirect("/")
+
+        # Aplicar taxa de saque
+        amount_after_fee = amount * (1 - WITHDRAWAL_FEE)
+
+        Withdrawal.objects.create(
+            affiliate=affiliate,
+            amount=amount_after_fee,
+        )
+
+        # Deduzir saldo do afiliado
+        affiliate.total_commission -= amount
+        affiliate.save()
+
+        messages.success(request, f"Saque solicitado com sucesso! Valor líquido: R$ {amount_after_fee:.2f}")
+        return redirect("/")
+
+    return render(request, "accounts/painel.html", {"affiliate": affiliate})
+
+
+@staff_member_required
+def approve_withdrawal(request, withdrawal_id):
+    withdrawal = get_object_or_404(Withdrawal, id=withdrawal_id)
+
+    if withdrawal.status == "Pendente":
+        withdrawal.status = "Aprovado"
+        withdrawal.processed_at = timezone.now()
+        withdrawal.save()
+        messages.success(request, "Saque aprovado com sucesso!")
+    else:
+        messages.error(request, "Este saque já foi processado.")
+
+    return redirect("/request_withdrawal")
+
+@staff_member_required
+def deny_withdrawal(request, withdrawal_id):
+    withdrawal = get_object_or_404(Withdrawal, id=withdrawal_id)
+
+    if withdrawal.status == "Pendente":
+        withdrawal.status = "Recusado"
+        withdrawal.processed_at = timezone.now()
+        withdrawal.affiliate.total_commission += withdrawal.amount  # Devolve o saldo
+        withdrawal.affiliate.save()
+        withdrawal.save()
+        messages.error(request, "Saque recusado.")
+    else:
+        messages.error(request, "Este saque já foi processado.")
+
+    return redirect("/request_withdrawal")
