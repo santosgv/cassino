@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'title' %} Gerenciar Saques {% endblock %}
+
+{% block 'body' %}
+<div class="container mt-4">
+    <h2>Gerenciar Solicitações de Saque</h2>
+    <table class="table table-striped text-center">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for withdrawal in withdrawals %}
+            <tr>
+                <td>{{ withdrawal.id }}</td>
+                <td>{{ withdrawal.affiliate.user.username }}</td>
+                <td>R$ {{ withdrawal.amount }}</td>
+                <td>{{ withdrawal.status }}</td>
+                <td>{{ withdrawal.requested_at }}</td>
+                <td>
+                    {% if withdrawal.status == "Pendente" %}
+                        <button class="btn btn-success" onclick="approveWithdrawal({{ withdrawal.id }})">Aprovar</button>
+                        <button class="btn btn-danger" onclick="denyWithdrawal({{ withdrawal.id }})">Negar</button>
+                    {% else %}
+                        <span class="badge {% if withdrawal.status == 'Aprovado' %}badge-success{% else %}badge-danger{% endif %}">
+                            {{ withdrawal.status }}
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Scripts para aprovação e negação -->
+<script>
+    function approveWithdrawal(id) {
+        window.location.href = `/approve_withdrawal/${id}/`;
+    }
+
+    function denyWithdrawal(id) {
+        window.location.href = `/deny_withdrawal/${id}/`;
+    }
+</script>
+{% endblock %}

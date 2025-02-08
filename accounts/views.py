@@ -8,6 +8,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from .models import Affiliate, Referral, Withdrawal
 from django.contrib.admin.views.decorators import staff_member_required
+from decimal import Decimal
 
 
 
@@ -68,35 +69,47 @@ def user_logout(request):
 
 @login_required
 def request_withdrawal(request):
-    affiliate = Affiliate.objects.get(user=request.user)
+    try:
+        affiliate = Affiliate.objects.get(user=request.user)
+    except Affiliate.DoesNotExist:
+        messages.error(request, "Você não possui afiliados.")
+        return redirect('/')
 
     if request.method == "POST":
-        amount = float(request.POST["amount"])
+        amount = Decimal(request.POST["amount"])  # Convertendo para Decimal
 
-        if amount < MIN_WITHDRAWAL:
+        if amount < Decimal(MIN_WITHDRAWAL):  # Convertendo para Decimal
             messages.error(request, f"O valor mínimo para saque é R$ {MIN_WITHDRAWAL:.2f}")
-            return redirect("/")
+            return redirect("Accounts:request_withdrawal")
 
         if amount > affiliate.total_commission:
             messages.error(request, "Saldo insuficiente para saque.")
-            return redirect("/")
+            return redirect("Accounts:request_withdrawal")
 
         # Aplicar taxa de saque
-        amount_after_fee = amount * (1 - WITHDRAWAL_FEE)
+        amount_after_fee = amount * (Decimal(1) - Decimal(WITHDRAWAL_FEE))
 
+        # Criar solicitação de saque
         Withdrawal.objects.create(
             affiliate=affiliate,
             amount=amount_after_fee,
         )
 
         # Deduzir saldo do afiliado
-        affiliate.total_commission -= amount
+        affiliate.total_commission -= amount  # Agora os tipos são compatíveis
         affiliate.save()
 
         messages.success(request, f"Saque solicitado com sucesso! Valor líquido: R$ {amount_after_fee:.2f}")
-        return redirect("/")
+        return redirect("Accounts:request_withdrawal")
 
     return render(request, "accounts/painel.html", {"affiliate": affiliate})
+
+
+@staff_member_required
+def manage_withdrawals(request):
+    withdrawals = Withdrawal.objects.all().order_by("-requested_at")
+
+    return render(request, "accounts/manage_withdrawals.html", {"withdrawals": withdrawals})
 
 
 @staff_member_required
@@ -111,7 +124,7 @@ def approve_withdrawal(request, withdrawal_id):
     else:
         messages.error(request, "Este saque já foi processado.")
 
-    return redirect("/request_withdrawal")
+    return redirect("/manage_withdrawals")
 
 @staff_member_required
 def deny_withdrawal(request, withdrawal_id):
@@ -127,4 +140,4 @@ def deny_withdrawal(request, withdrawal_id):
     else:
         messages.error(request, "Este saque já foi processado.")
 
-    return redirect("/request_withdrawal")
+    return redirect("/manage_withdrawals")

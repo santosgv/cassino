@@ -7,10 +7,19 @@ class Affiliate(models.Model):
     referral_code = models.UUIDField(default=uuid.uuid4, unique=True)
     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10)  # Percentual de comissão
     total_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    referral_link = models.URLField(blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.referral_link:  # Evita sobrescrever caso já tenha sido gerado
+            self.referral_link = f"http://0.0.0.0:5000/register?ref={self.referral_code}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Afiliado: {self.user.username}"
 
 class Referral(models.Model):
-    affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE)
-    referred_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="referred_users", null=True, blank=True)
+    affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE,related_name="referrals")
+    referred_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)  # Para rastrear acessos
     created_at = models.DateTimeField(auto_now_add=True)
 

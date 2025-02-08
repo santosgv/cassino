@@ -16,6 +16,8 @@ Painel do Afiliado
     <button type="submit">Solicitar Saque</button>
 </form>
 
+<p>Seu link de indicação: <a href="{{ affiliate.referral_link }}" target="_blank">{{ affiliate.referral_link }}</a></p>
+
 <h3>Histórico de Saques</h3>
 <hr>
 <table class="table table-striped text-center">
@@ -35,11 +37,7 @@ Painel do Afiliado
             <td>{{ withdrawal.requested_at }}</td>
             <td>
                 {% if withdrawal.status == "Pendente" %}
-                <button class="btn btn-primary" data-toggle="modal" data-target="#withdrawalModal"
-                        data-id="{{ withdrawal.id }}" data-user="{{ withdrawal.affiliate.user.username }}"
-                        data-amount="{{ withdrawal.amount }}" data-status="{{ withdrawal.status }}">
-                    Gerenciar Saque
-                </button>
+                <span class="badge badge-warning">Aguardando aprovação</span>
                 {% else %}
                 <span class="text-muted">Finalizado</span>
                 {% endif %}
@@ -49,54 +47,5 @@ Painel do Afiliado
     </tbody>
 </table>
 
-<!-- Modal -->
-<div class="modal fade" id="withdrawalModal" tabindex="-1" aria-labelledby="withdrawalModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="withdrawalModalLabel">Gerenciar Solicitação de Saque</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p><strong>Usuário:</strong> <span id="user-name"></span></p>
-        <p><strong>Valor:</strong> R$ <span id="withdraw-amount"></span></p>
-        <p><strong>Status:</strong> <span id="withdraw-status"></span></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" id="deny-btn">Negar</button>
-        <button type="button" class="btn btn-success" id="approve-btn">Aprovar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Script para preencher o modal corretamente -->
-<script>
-  $('#withdrawalModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget); 
-      var id = button.data('id'); 
-      var user = button.data('user');
-      var amount = button.data('amount');
-      var status = button.data('status');
-
-      var modal = $(this);
-      modal.find('#user-name').text(user);
-      modal.find('#withdraw-amount').text(amount);
-      modal.find('#withdraw-status').text(status);
-
-      modal.find('#approve-btn').attr('onclick', `approveWithdrawal(${id})`);
-      modal.find('#deny-btn').attr('onclick', `denyWithdrawal(${id})`);
-  });
-
-  function approveWithdrawal(id) {
-    window.location.href = `/approve_withdrawal/${id}/`;
-  }
-
-  function denyWithdrawal(id) {
-    window.location.href = `/deny_withdrawal/${id}/`;
-  }
-</script>
 
 {% endblock %}

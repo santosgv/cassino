@@ -100,6 +100,12 @@
               <a class="nav-link" style="color: #002bff;" href="{% url 'jogo' %}"><img width="30" height="30" src="https://img.icons8.com/emoji/48/slot-machine-emoji--v2.png" alt="slot-machine-emoji--v2"/> Jogar</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/currency-exchange-emoji.png" alt="currency-exchange-emoji"/> Converter</a>
               <a class="nav-link" style="color: #002bff;" href="#" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
+            
+              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:request_withdrawal' %}">Afiliados</a>
+              
+              {% if request.user.is_staff %}
+              <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:manage_withdrawals' %}">Gerenciar Saques</a>
+              {% endif %}
               <div class="dropdown-divider"></div>
               <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:logout' %}" >Sair</a>
             </div>
