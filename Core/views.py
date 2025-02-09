@@ -2,8 +2,24 @@ from django.shortcuts import render,redirect
 from django.http import JsonResponse
 import random
 from django.contrib.auth.decorators import login_required
-from .models import UserCredit
+from .models import UserCredit,TransactionHistory
+from accounts.models import Withdrawal
 from django.contrib import messages
+import mercadopago
+from decimal import Decimal
+from django.conf import settings
+
+
+MIN_WITHDRAWAL = 5
+
+# Lista dos pacotes disponíveis
+PACKAGES = {
+    "starter": {"name": "🟢 Starter Pack", "credits": 20, "price": 10.00, "bonus": 0, "color": "success"},
+    "pro": {"name": "🔵 Pro Player", "credits": 100, "price": 50.00, "bonus": 50, "color": "primary"},
+    "high_roller": {"name": "🔴 High Roller", "credits": 200, "price": 100.00, "bonus": 100, "color": "danger"},
+    "vip": {"name": "🔥 VIP Pack", "credits": 500, "price": 250.00, "bonus": 250, "color": "warning"},
+    "super_vip": {"name": " 💎Super VIP", "credits": 1000, "price": 500.00, "bonus": 300, "color": "info"},
+}
 
 
 @login_required(login_url='/login/')  
@@ -12,6 +28,7 @@ def jogo(request):
 
     return render(request, 'slot_machine/index.html', {'credits': user_credit.credits})
 
+@login_required(login_url='/login/') 
 def spin(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
@@ -83,10 +100,13 @@ def spin(request):
 
     return JsonResponse({'results': results, 'message': message, 'credits': user_credit.credits})
 
+@login_required(login_url='/login/') 
 def creditos(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
-    return render(request, 'vendas.html',{'credits': user_credit.credits})
+    return render(request, 'vendas.html',{'credits': user_credit.credits,
+                                            "packages": PACKAGES})
 
+@login_required(login_url='/login/') 
 def convert_credits(request):
     if not request.user.is_authenticated:
         messages.error(request,'Usuário não autenticado.')
@@ -106,3 +126,104 @@ def convert_credits(request):
     user_credit.save()
 
     return redirect('/creditos/')
+
+@login_required(login_url='/login/') 
+def purchase_credits(request, package_name):
+    """ Gera um link de pagamento do Mercado Pago para a compra do pacote de créditos """
+    
+    if package_name not in PACKAGES:
+        messages.error(request, "Pacote inválido!")
+        return redirect("creditos")
+
+    package = PACKAGES[package_name]
+    mp = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
+
+    # Criando a preferência de pagamento
+    preference_data = {
+        "items": [{
+            "title": f"{package_name.replace('_', ' ').title()} - {package['credits']} Créditos",
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": float(package["price"]),
+        }],
+        "payer": {
+            "email": request.user.email,
+        },
+        "back_urls": {
+            "success": request.build_absolute_uri(f"/purchase/success/{package_name}/"),
+            "failure": request.build_absolute_uri("/purchase/failure/"),
+            "pending": request.build_absolute_uri("/purchase/pending/"),
+        },
+        "auto_return": "approved",
+        "notification_url": request.build_absolute_uri("/mercadopago/webhook/"),
+    }
+
+    preference_response = mp.preference().create(preference_data)
+    payment_link = preference_response["response"]["init_point"]
+
+    return redirect(payment_link)
+
+@login_required(login_url='/login/') 
+def purchase_success(request, package_name):
+    """ Processa a compra bem-sucedida e adiciona os créditos ao usuário """
+
+    if package_name not in PACKAGES:
+        messages.error(request, "Pacote inválido!")
+        return redirect("creditos")
+
+    package = PACKAGES[package_name]
+    user_credit, created = UserCredit.objects.get_or_create(user=request.user)
+
+    # Adicionando os créditos + bônus ao saldo do usuário
+    total_credits = package["credits"] + package["bonus"]
+    user_credit.credits += total_credits
+    user_credit.save()
+
+    # Criando um registro da transação
+    TransactionHistory.objects.create(
+        user=request.user,
+        transaction_type="deposit",
+        amount=Decimal(package["price"]),
+        credits=total_credits,
+        status="Aprovado"
+    )
+
+    messages.success(request, f"Compra bem-sucedida! Você recebeu {total_credits} créditos.")
+    return redirect("creditos")
+
+@login_required(login_url='/login/') 
+def purchase_failure(request):
+    """ Exibe uma mensagem de falha na compra """
+    messages.error(request, "O pagamento não foi aprovado. Tente novamente.")
+    return redirect("creditos")
+
+
+@login_required(login_url='/login/') 
+def purchase_pending(request):
+    """ Exibe uma mensagem para pagamentos pendentes """
+    messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
+    return redirect("creditos")
+
+
+@login_required
+def request_pix_withdrawal(request):
+    if request.method == "POST":
+        amount = Decimal(request.POST["amount"])
+        pix_key = request.POST["pix_key"]
+
+        user_credit = UserCredit.objects.get(user=request.user)
+
+        if amount > user_credit.balance:
+            messages.error(request, "Saldo insuficiente.")
+            return redirect("request_pix_withdrawal")
+
+        if amount < MIN_WITHDRAWAL:
+            messages.error(request, "Saldo insuficiente. Para saque, valor mínimo é R$ 100.")
+            return redirect("request_pix_withdrawal")
+
+        withdrawal = Withdrawal.objects.create(user=request.user, amount=amount, pix_key=pix_key)
+        messages.success(request, "Solicitação de saque enviada para aprovação.")
+        withdrawal.save()
+        return redirect("request_pix_withdrawal")
+
+    return render(request, "withdraw_pix.html")

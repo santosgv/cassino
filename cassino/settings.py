@@ -1,6 +1,7 @@
 
 from pathlib import Path
 import os
+from decouple import config,Csv
 from django.contrib.messages import constants
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -9,10 +10,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-lyg&7x-h-_^n=46mzchv8n6#@359ngyzq*)j-i24u$zbift3*5'
+SECRET_KEY =config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 
@@ -102,6 +103,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+DATE_FORMAT = "d-m-Y"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -117,6 +119,8 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MERCADO_PAGO_ACCESS_TOKEN=config('MERCADO_PAGO_ACCESS_TOKEN')
 
 
 MESSAGE_TAGS = {

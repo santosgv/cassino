@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'title' %}
+Saque Pix
+{% endblock %}
+
+{% block 'body' %}
+<div class="container mt-5">
+    <h2 class="text-center">Solicitação de Saque via Pix</h2>
+
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="pix_key" class="form-label">Chave Pix</label>
+                    <input type="text" name="pix_key" id="pix_key" class="form-control" required placeholder="Digite sua chave Pix">
+                </div>
+
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Valor do Saque (R$)</label>
+                    <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="1.00" required placeholder="Ex: 100.00">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Solicitar Saque</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="" class="btn btn-secondary">Histórico de Transações</a>
+    </div>
+</div>
+{% endblock %}

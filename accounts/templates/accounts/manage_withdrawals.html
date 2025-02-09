@@ -17,6 +17,7 @@
                 <th>Valor</th>
                 <th>Status</th>
                 <th>Data</th>
+                <th>Chave Pix</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -24,10 +25,11 @@
             {% for withdrawal in withdrawals %}
             <tr>
                 <td>{{ withdrawal.id }}</td>
-                <td>{{ withdrawal.affiliate.user.username }}</td>
+                <td>{{ withdrawal.affiliate.user.username }} {% if withdrawal.user.username %}{{withdrawal.user.username}}{% endif %}</td>
                 <td>R$ {{ withdrawal.amount }}</td>
                 <td>{{ withdrawal.status }}</td>
                 <td>{{ withdrawal.requested_at }}</td>
+                <td>{{ withdrawal.pix_key }}</td>
                 <td>
                     {% if withdrawal.status == "Pendente" %}
                         <button class="btn btn-success" onclick="approveWithdrawal({{ withdrawal.id }})">Aprovar</button>
@@ -38,6 +40,7 @@
                         </span>
                     {% endif %}
                 </td>
+
             </tr>
             {% endfor %}
         </tbody>

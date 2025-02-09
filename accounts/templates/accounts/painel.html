@@ -9,12 +9,25 @@ Painel do Afiliado
 
 <h2>Seu Saldo: R$ {{ affiliate.total_commission }}</h2>
 
-<form method="post">
-    {% csrf_token %}
-    <label for="amount">Valor do Saque:</label>
-    <input type="number" name="amount" step="0.01" required>
-    <button type="submit">Solicitar Saque</button>
-</form>
+<div class="card mx-auto" style="max-width: 500px;">
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="pix_key" class="form-label">Chave Pix</label>
+                <input type="text" name="pix_key" id="pix_key" class="form-control" required placeholder="Digite sua chave Pix">
+            </div>
+
+            <div class="mb-3">
+                <label for="amount" class="form-label">Valor do Saque (R$)</label>
+                <input type="number" name="amount" id="amount" class="form-control" step="0.01" min="1.00" required placeholder="Ex: 100.00">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Solicitar Saque</button>
+        </form>
+    </div>
+</div>
 
 <p>Seu link de indicação: <a href="{{ affiliate.referral_link }}" target="_blank">{{ affiliate.referral_link }}</a></p>
 
@@ -24,24 +37,26 @@ Painel do Afiliado
     <thead>
       <tr>
         <th scope="col">Valor</th>
+        <th scope="col">Chave</th>
         <th scope="col">Status</th>
         <th scope="col">Data</th>
-        <th scope="col">Ação</th>
+        <th scope="col">Tranzaçao</th>
       </tr>
     </thead>
     <tbody>
         {% for withdrawal in affiliate.withdrawal_set.all %}
         <tr>
             <td>R$ {{ withdrawal.amount }}</td>
-            <td>{{ withdrawal.status }}</td>
-            <td>{{ withdrawal.requested_at }}</td>
+            <td>{{ withdrawal.pix_key }}</td>
             <td>
                 {% if withdrawal.status == "Pendente" %}
                 <span style="color: rgb(5, 5, 5);"class="badge badge-warning">Aguardando aprovação</span>
                 {% else %}
-                <span class="text-muted">Finalizado</span>
+                <span class="text-muted">{{withdrawal.status}}</span>
                 {% endif %}
             </td>
+            <td>{{ withdrawal.requested_at }}</td>
+            <td>{{ withdrawal.transaction_id }}</td>
         </tr>
         {% endfor %}
     </tbody>

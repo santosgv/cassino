@@ -73,6 +73,7 @@ def request_withdrawal(request):
 
     if request.method == "POST":
         amount = Decimal(request.POST["amount"])  # Convertendo para Decimal
+        pix_key = request.POST["pix_key"]
 
         if amount < Decimal(MIN_WITHDRAWAL):  # Convertendo para Decimal
             messages.error(request, f"O valor mínimo para saque é R$ {MIN_WITHDRAWAL:.2f}")
@@ -89,6 +90,7 @@ def request_withdrawal(request):
         Withdrawal.objects.create(
             affiliate=affiliate,
             amount=amount_after_fee,
+            pix_key=pix_key
         )
 
         # Deduzir saldo do afiliado
@@ -104,8 +106,8 @@ def request_withdrawal(request):
 @staff_member_required
 def manage_withdrawals(request):
     withdrawals = Withdrawal.objects.all().order_by("-requested_at")
-
-    return render(request, "accounts/manage_withdrawals.html", {"withdrawals": withdrawals})
+    return render(request, "accounts/manage_withdrawals.html", {"withdrawals": withdrawals,
+                                                                })
 
 
 @staff_member_required
@@ -129,8 +131,9 @@ def deny_withdrawal(request, withdrawal_id):
     if withdrawal.status == "Pendente":
         withdrawal.status = "Recusado"
         withdrawal.processed_at = timezone.now()
-        withdrawal.affiliate.total_commission += withdrawal.amount  # Devolve o saldo
-        withdrawal.affiliate.save()
+        if withdrawal.affiliate:
+            withdrawal.affiliate.total_commission += withdrawal.amount  # Devolve o saldo
+            withdrawal.affiliate.save()
         withdrawal.save()
         messages.error(request, "Saque recusado.")
     else:

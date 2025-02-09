@@ -99,7 +99,7 @@
             <div class="dropdown-menu">
               <a class="nav-link" style="color: #002bff;" href="{% url 'jogo' %}"><img width="30" height="30" src="https://img.icons8.com/emoji/48/slot-machine-emoji--v2.png" alt="slot-machine-emoji--v2"/> Jogar</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/currency-exchange-emoji.png" alt="currency-exchange-emoji"/> Converter</a>
-              <a class="nav-link" style="color: #002bff;" href="#" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
+              <a class="nav-link" style="color: #002bff;" href="{% url 'request_pix_withdrawal' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
               {% if user.usercredit.is_affiliate %}
               <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:request_withdrawal' %}"><img width="30" height="30" src="https://img.icons8.com/external-flaticons-flat-flat-icons/64/external-affiliate-live-streaming-flaticons-flat-flat-icons-2.png" alt="external-affiliate-live-streaming-flaticons-flat-flat-icons-2"/> Afiliados</a>
               {%endif%}

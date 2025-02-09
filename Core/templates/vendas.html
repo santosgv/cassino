@@ -8,86 +8,32 @@
 
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
       <h1 class="display-4">🔥Aposte Alto e Multiplique Seus Ganhos!🔥</h1>
-      <p class="lead">Escolha seu pacote de créditos e jogue para ganhar!</p>
+      <p class="lead">💎 Escolha seu pacote de créditos e jogue para ganhar! 💎</p>
       <p class="lead">⚡ Pacotes exclusivos para você girar e Aumentar a chances de faturar alto!</p>
     </div>
 
     <div class="container text-center justify-content-center">
       <div class="card-deck mb-3 text-center">
-        <div class="row">
-        <div class="col-sm-4">
-          <div class="card">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">🟢 Starter Pack – 20 Créditos</h4>
+        <div class="card-group text-center">
+      {% for key, package in packages.items %}
+          <div class="card border-{{ package.color }}">
+          <div >
+            <h4 class="my-0 font-weight-normal">{{ package.name }} Pack – 🎮 {{ package.credits }} Créditos</h4>
           </div>
           <div class="card-body">
-            <h1 class="card-title pricing-card-title">R$ 10,00</h1>
+            <h1 class="card-title pricing-card-title">R$ {{ package.price }}</h1>
             <ul class="list-unstyled mt-3 mb-4">
-              <li>❌ Sem bônus</li>
+              {% if package.bonus > 0 %}
+              🎁 <strong>Bônus: +{{ package.bonus }} Créditos!</strong>
+              {% else %}
+              ❌ Sem bônus
+              {% endif %}
             </ul>
-            <button type="button" class="btn btn-lg btn-block btn-success">Adicionar</button>
+            <a  href="{% url 'purchase_credits' package_name=key %}" type="button" class="btn btn-lg btn-block btn-{{ package.color }}">Adicionar</a>
           </div>
         </div>
-      </div>
-        <div class="col-sm-4">
-          <div class="card">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">🔵 Pro Player – 100 Créditos</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title">R$ 50,00</h1>
-            <ul class="list-unstyled mt-3 mb-4">
-              <li>🎁 +50 Créditos Grátis!</li>
-            </ul>
-            <button type="button" class="btn btn-lg btn-block btn-primary">Adicionar</button>
-          </div>
+      {% endfor %}
         </div>
-      </div>
-        <div class="col-sm-4">
-          <div class="card">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">🔴 High Roller – 200 Créditos</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title">R$ 100,00</h1>
-            <ul class="list-unstyled mt-3 mb-4">
-              <li>🎁 +100 Créditos!</li>
-            </ul>
-            <button type="button" class="btn btn-lg btn-block btn-danger">Adicionar</button>
-          </div>
-        </div>
-      </div>  
-        </div>
-        <div class="row">
-        <div class="col-sm-6">
-          <div class="card border-primary">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">💎 VIP Pack – 500 Créditos</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title">R$ 250,00</h1>
-            <ul class="list-unstyled mt-3 mb-4">
-              <li>🎁 +250 créditos</li>
-            </ul>
-            <button type="button" class="btn btn-outline-primary">Adicionar</button>
-          </div>
-        </div>
-        </div>
-        <div class="col-sm-6">
-          <div class="card border-warning">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">🔥 Super VIP – 1000 Créditos</h4>
-          </div>
-          <div class="card-body">
-            <h1 class="card-title pricing-card-title">R$ 500,00</h1>
-            <ul class="list-unstyled mt-3 mb-4">
-              <li>🎁 +300 créditos</li>
-            </ul>
-            <button type="button" class="btn btn-outline-warning">Adicionar</button>
-          </div>
-        </div>
-      </div>
-      </div>
       </div>
     </div>
 
