@@ -8,9 +8,10 @@ from django.contrib import messages
 import mercadopago
 from decimal import Decimal
 from django.conf import settings
+from django.core.paginator import Paginator
 
 
-MIN_WITHDRAWAL = 5
+MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
 PACKAGES = {
@@ -207,6 +208,12 @@ def purchase_pending(request):
 
 @login_required
 def request_pix_withdrawal(request):
+    withdrawals_all = Withdrawal.objects.filter(user=request.user).order_by('-id')
+
+    pagina = Paginator(withdrawals_all, 10)
+    page = request.GET.get('page')
+    withdrawals = pagina.get_page(page)
+
     if request.method == "POST":
         amount = Decimal(request.POST["amount"])
         pix_key = request.POST["pix_key"]
@@ -232,4 +239,4 @@ def request_pix_withdrawal(request):
         withdrawal.save()
         return redirect("request_pix_withdrawal")
 
-    return render(request, "withdraw_pix.html")
+    return render(request, "withdraw_pix.html",{'withdrawals':withdrawals})

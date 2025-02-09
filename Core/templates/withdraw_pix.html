@@ -28,9 +28,53 @@ Saque Pix
             </form>
         </div>
     </div>
-
+<hr>
     <div class="text-center mt-4">
-        <a href="" class="btn btn-secondary">Histórico de Transações</a>
+        <table class="table table-striped text-center">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuário</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th>Chave Pix</th>
+                    <th>Status</th>
+                    <th>Tranzaçao</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for withdrawal in withdrawals %}
+                <tr>
+                    <td>{{withdrawal.id}}</td>
+                    <td>{{withdrawal.user}}</td>
+                    <td>R$ {{withdrawal.amount}}</td>
+                    <td>{{withdrawal.requested_at}}</td>
+                    <td>{{withdrawal.pix_key}}</td>
+                    <td>{{withdrawal.status}}</td>
+                    <td>{{withdrawal.transaction_id}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination text-center">
+              
+            <samp class="step-links">
+                  {% if withdrawals.has_previous %}
+                  <a href="?page={{withdrawals.previous_page_number}}"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAxUlEQVR4nO2XQQrCMBBFH6gHUBdV8ABeQc0tep/eRgTrDTyDuLG68BZ6AKUwwiyKqyYzpf0QCJnF+8lkyAQGtas1MMZIAXgBRwsTO4F/ZJQpTQTgLeCzmh+AUUp4KbvWa/uYJkID/KdcpaNIDV8CD4ldgGnMC3cCJiqWAZXErsC8N/CFNfzeS/gKeMaEb/6UmobXpTZrG+7CQK2tZf47ZaKyNpENJtRJ3FKkI1g+xy4aEhctmYumtKlEk7flLj4mLr5mdFJfjvGIRFYr/lMAAAAASUVORK5CYII="></a>
+                  {% endif %}
+
+                    <samp class="current">
+                      {{withdrawals.number}} de {{withdrawals.paginator.num_pages}}
+                    </samp>
+
+                  {% if withdrawals.has_next %}
+                  <a href="?page={{withdrawals.next_page_number}}"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAA0ElEQVR4nO2XPQoCMRBGH6wHyNr5U1h6BWEL77D32duooEfwBoK1RAvv4G6vCAFDUBaLzIQlA4GQ5n35ZoZMIMd/MQKWKML3wAOopOEFsAGebnXAWhK+c+AWOHr7SvLmrQO+U3GQEtF4ttfeuZiIEjg70AWYaIgwwMmBLDD9kaKohWkCETNtEdcsgo8Tc+103IGFhoix16K3wImwRVeDE2B66mAbMwWmpx0zvIttu9W03X55jKLCS+3nuNEeSArtkUx9KE1iLE/iY5LE14xBxgtb/Ig367sTTAAAAABJRU5ErkJggg=="></a>
+                  {% endif %}
+            </samp>
+          </div>
+
+
     </div>
 </div>
 {% endblock %}

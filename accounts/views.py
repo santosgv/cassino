@@ -10,6 +10,7 @@ from .models import Affiliate, Referral, Withdrawal
 from django.contrib.admin.views.decorators import staff_member_required
 from decimal import Decimal
 from Core.models import UserCredit
+from django.core.paginator import Paginator
 
 
 
@@ -106,7 +107,13 @@ def request_withdrawal(request):
 
 @staff_member_required
 def manage_withdrawals(request):
-    withdrawals = Withdrawal.objects.all().order_by("-requested_at")
+    withdrawals_all = Withdrawal.objects.all().order_by("-requested_at")
+
+    pagina = Paginator(withdrawals_all, 25)
+    page = request.GET.get('page')
+    withdrawals = pagina.get_page(page)
+
+
     return render(request, "accounts/manage_withdrawals.html", {"withdrawals": withdrawals,
                                                                 })
 
@@ -132,13 +139,19 @@ def deny_withdrawal(request, withdrawal_id):
     if withdrawal.status == "Pendente":
         withdrawal.status = "Recusado"
         withdrawal.processed_at = timezone.now()
+
         if withdrawal.affiliate:
             withdrawal.affiliate.total_commission += withdrawal.amount  # Devolve o saldo
             withdrawal.affiliate.save()
             messages.error(request, "Saque recusado.")
 
-       # withdraw_pix.balance += withdraw_pix.balance
-       # withdraw_pix.save()
+        # Devolver saldo para usuário comum
+        elif withdrawal.user:
+            user_credit = UserCredit.objects.get(user=withdrawal.user)
+            user_credit.balance += withdrawal.amount
+            user_credit.save()
+
+        withdrawal.save()
         messages.error(request, "Saque recusado.")
     else:
         messages.error(request, "Este saque já foi processado.")
