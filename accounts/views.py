@@ -9,6 +9,7 @@ from django.contrib import messages
 from .models import Affiliate, Referral, Withdrawal
 from django.contrib.admin.views.decorators import staff_member_required
 from decimal import Decimal
+from Core.models import UserCredit
 
 
 
@@ -134,7 +135,10 @@ def deny_withdrawal(request, withdrawal_id):
         if withdrawal.affiliate:
             withdrawal.affiliate.total_commission += withdrawal.amount  # Devolve o saldo
             withdrawal.affiliate.save()
-        withdrawal.save()
+            messages.error(request, "Saque recusado.")
+
+       # withdraw_pix.balance += withdraw_pix.balance
+       # withdraw_pix.save()
         messages.error(request, "Saque recusado.")
     else:
         messages.error(request, "Este saque já foi processado.")

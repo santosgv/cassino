@@ -221,7 +221,13 @@ def request_pix_withdrawal(request):
             messages.error(request, "Saldo insuficiente. Para saque, valor mínimo é R$ 100.")
             return redirect("request_pix_withdrawal")
 
+
+
         withdrawal = Withdrawal.objects.create(user=request.user, amount=amount, pix_key=pix_key)
+
+        user_credit.balance -= amount
+        user_credit.save()
+
         messages.success(request, "Solicitação de saque enviada para aprovação.")
         withdrawal.save()
         return redirect("request_pix_withdrawal")
