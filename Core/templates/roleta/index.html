@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+    <title>{% block 'title' %}
+        Roleta
+        {% endblock %}</title>
+        {% block 'head' %}
+
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                background-color: #f0f0f0;
+                color: rgb(14, 12, 12);
+                font-family: Arial, sans-serif;
+            }
+            .wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 10px solid gold;
+    box-shadow: 0 0 20px gold;
+    transition: transform 5s ease-out;
+    background: conic-gradient(
+        #ff0000 0deg 36deg,        /* Perde Tudo */
+        #ffaf02 36deg 72deg,       /* x2 */
+        #00ff00 72deg 108deg,      /* x5 */
+        #0099ff 108deg 144deg,    /* Perde Tudo */
+        #9900ff 144deg 180deg,     /* Passa a Vez */
+        #ff0000 180deg 216deg,     /* Nova Opção 1 */
+        #ffaf02 216deg 252deg,     /* Nova Opção 2 */
+        #00ff00 252deg 288deg,     /* Nova Opção 3 */
+        #0099ff 288deg 324deg,     /* Nova Opção 4 */
+        #9900ff 324deg 360deg      /* Nova Opção 5 */
+    );
+    position: relative;
+    overflow: hidden;
+}
+.marker {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(150deg);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid rgb(0, 0, 0);
+    transform-origin: bottom center;
+    z-index: 1000;
+}
+.spin-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: gold;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 10px gold;
+}
+.spin-button:hover {
+    background-color: orange;
+}
+.prizes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.prizes div {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    transform-origin: center;
+}
+
+.prizes div:nth-child(1) { transform: rotate(18deg) translateY(-120px); }
+.prizes div:nth-child(2) { transform: rotate(54deg) translateY(-120px); }
+.prizes div:nth-child(3) { transform: rotate(90deg) translateY(-120px); }
+.prizes div:nth-child(4) { transform: rotate(126deg) translateY(-120px); }
+.prizes div:nth-child(5) { transform: rotate(162deg) translateY(-120px); }
+.prizes div:nth-child(6) { transform: rotate(198deg) translateY(-120px); }
+.prizes div:nth-child(7) { transform: rotate(234deg) translateY(-120px); }
+.prizes div:nth-child(8) { transform: rotate(270deg) translateY(-120px); }
+.prizes div:nth-child(9) { transform: rotate(306deg) translateY(-120px); }
+.prizes div:nth-child(10) { transform: rotate(342deg) translateY(-120px); }
+
+#result {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}   
+        </style>
+        {% endblock %}
+
+        {% block 'body' %}
+        <div class="credits" id="credits" style="color: #fff; background-color: #333; border: solid; border-radius: 10px; padding: 10px;">Créditos: {{credits}}</div> <!-- Exibir créditos -->
+        <div class="wheel-container" style="margin-top: 10px;">
+            <div class="marker"></div>
+            <div class="wheel" id="wheel">
+                <div class="prizes">
+                    <div id="0">Perde</div>
+                    <div id="1">x2</div>
+                    <div id="2">x5</div>
+                    <div id="3">Perde</div>
+                    <div id="4">x20</div>
+                    <div id="5">Perde</div>
+                    <div id="6">x2</div>
+                    <div id="7">x5</div>
+                    <div id="8">Perde</div>
+                    <div id="9">Passa</div>
+                </div>
+            </div>
+        </div>
+        <button class="spin-button" onclick="spinWheel()">Girar</button>
+        <p id="result"></p>
+        
+            <script>
+
+function spinWheel() {
+    const wheel = document.getElementById("wheel");
+    const resultText = document.getElementById("result");
+    let credits = {{ credits }};
+
+    if (credits < 1) {
+                alert('Créditos insuficientes!');
+                return;
+            }
+    
+
+    fetch("/spin_roulette/", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultText.innerText = data.error;
+            return;
+        }
+
+        const degreesPerSection = 72; // Cada seção tem 72° (360° / 5 setores)
+        const fullRotations = 5; // Giros completos para realismo
+
+        // ** Ajuste exato para alinhar com o marcador **
+        const offset = 360 - (data.index * degreesPerSection); 
+
+        // Definir rotação final considerando giros completos
+        const finalDegree = (fullRotations * 360) + offset;
+
+        // Resetar animação anterior
+        wheel.style.transition = "none";
+        wheel.style.transform = `rotate(0deg)`;
+
+        setTimeout(() => {
+            wheel.style.transition = "transform 3s ease-out";
+            wheel.style.transform = `rotate(${finalDegree}deg)`;
+        }, 50);
+
+        // Exibir resultado após a animação
+        setTimeout(() => {
+            credits = data.credits;
+            document.getElementById('credits').textContent = `Créditos: ${credits}`;
+            resultText.innerText = `${data.result} | Créditos: ${data.credits}`;
+        }, 3100);
+    })
+    .catch(error => {
+        resultText.innerText = "Erro: " + error.message;
+    });
+}
+
+// Função para obter o cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+            </script>
+
+        {% endblock %}
