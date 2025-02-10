@@ -17,11 +17,20 @@ class Affiliate(models.Model):
     def __str__(self):
         return f"Afiliado: {self.user.username}"
 
+    class Meta:
+        verbose_name_plural = "Afiliados"
+
 class Referral(models.Model):
     affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE,related_name="referrals")
     referred_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)  # Para rastrear acessos
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Afiliado: {self.affiliate.user.username} - {self.referred_user.username}"
+
+    class Meta:
+        verbose_name_plural = "Rastreio de Afiliados"
 
 class Withdrawal(models.Model):
     affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE,null=True, blank=True)
@@ -36,4 +45,10 @@ class Withdrawal(models.Model):
     transaction_id = models.UUIDField(default=uuid.uuid4, unique=True)
     requested_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.amount}"
+
+    class Meta:
+        verbose_name_plural = "Saques"
 

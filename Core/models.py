@@ -12,6 +12,9 @@ class UserCredit(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.credits} créditos - R$ {self.balance} - Nível {self.level}"
 
+    class Meta:
+        verbose_name_plural = "Creditos"
+
 
 class TransactionHistory(models.Model):
     TRANSACTION_TYPES = [
@@ -32,4 +35,6 @@ class TransactionHistory(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.transaction_type} - R$ {self.amount}"
 
+    class Meta:
+        verbose_name_plural = "Historico de transaçoes"
 

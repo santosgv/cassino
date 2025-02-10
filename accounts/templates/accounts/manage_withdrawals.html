@@ -9,6 +9,7 @@
 {% block 'body' %}
 <div class="container mt-4">
     <h2>Gerenciar Solicitações de Saque</h2>
+    <div class="table-responsive">
     <table class="table table-striped text-center">
         <thead>
             <tr>
@@ -18,6 +19,7 @@
                 <th>Afiliado</th>
                 <th>Data</th>
                 <th>Chave Pix</th>
+                <th>transação</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -30,6 +32,7 @@
                 <td>{% if withdrawal.affiliate %} Sim {% else %} Nao {% endif %}</td>
                 <td>{{ withdrawal.requested_at }}</td>
                 <td>{{ withdrawal.pix_key }}</td>
+                <td>{{ withdrawal.transaction_id }}</td>
                 <td>
                     {% if withdrawal.status == "Pendente" %}
                         <button class="btn btn-success" onclick="approveWithdrawal({{ withdrawal.id }})">Aprovar</button>
@@ -45,7 +48,7 @@
             {% endfor %}
         </tbody>
     </table>
-
+</div>
 
     <div class="pagination text-center">
               

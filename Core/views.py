@@ -53,8 +53,8 @@ def spin(request):
         1: [80, 15, 3, 1, 0.5, 0.3, 0.2],      # Nível 1: Muitas chances de ganhar prêmios pequenos
         2: [70, 20, 5, 3, 1, 0.5, 0.5],          # Nível 2: 90% de chances de 5x, poucos prêmios maiores  
         3: [50, 30, 10, 5, 3, 1.5, 0.5],             # Nível 3: Equilibrado
-        4: [30, 30, 20, 10, 5, 3, 2],          # Nível 4: Difícil ganhar qualquer coisa além de 2x e 5x  
-        5: [25, 20, 15, 10, 10, 10, 10],          # Nível 5: Mais chances de ganhar os prêmios altos
+        4: [30, 30, 20, 10, 5, 3, 2,5],          # Nível 4: Difícil ganhar qualquer coisa além de 2x e 5x  
+        5: [30, 30, 20, 10, 5, 2,5, 2,5],          # Nível 5: Mais chances de ganhar os prêmios altos
     }
 
 
@@ -88,7 +88,18 @@ def spin(request):
         credits_won = (user_credit.credits + 1) * (multiplier)  # Créditos ganhos (baseado no multiplicador)
         user_credit.credits += credits_won  # Adiciona os créditos ganhos ao saldo
 
-        print('creditos ganho', credits_won)
+        # **Regras para impedir ganhos excessivos**
+        if user_credit.level in [1, 2]:  
+            if user_credit.credits + credits_won > 100:  
+                credits_won = 100 - user_credit.credits  # Ajusta para não passar de 100  
+
+        elif user_credit.level >= 3:  
+            if credits_won > user_credit.credits * 2:  
+                credits_won = user_credit.credits  # Impede ganhos absurdos  
+        
+        # **Nível 4 e 5 não podem ganhar acima do x2**
+        if user_credit.level >= 4 and credits_won > user_credit.credits:
+            credits_won = 0  # Sem ganhos a partir do nível 4
         
         # Aumentar o nível se ganhou
         if user_credit.level < 5:
@@ -198,13 +209,11 @@ def purchase_failure(request):
     messages.error(request, "O pagamento não foi aprovado. Tente novamente.")
     return redirect("creditos")
 
-
 @login_required(login_url='/login/') 
 def purchase_pending(request):
     """ Exibe uma mensagem para pagamentos pendentes """
     messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
     return redirect("creditos")
-
 
 @login_required
 def request_pix_withdrawal(request):
