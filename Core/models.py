@@ -8,6 +8,20 @@ class UserCredit(models.Model):
     credits = models.IntegerField(default=0)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     level = models.IntegerField(default=1)
+    total_bet = models.IntegerField(default=0)
+    total_won = models.IntegerField(default=0)
+
+    def update_stats(self, bet_amount, won_amount):
+        self.total_bet += bet_amount
+        self.total_won += won_amount
+        self.save()
+
+    def apply_casino_margin(self, bet_amount):
+        # Aplica a margem de lucro do cassino (10%)
+        casino_margin = int(bet_amount * 0.10)
+        self.credits -= casino_margin
+        self.save()
+        return casino_margin
 
     def __str__(self):
         return f"{self.user.username} - {self.credits} créditos - R$ {self.balance} - Nível {self.level}"

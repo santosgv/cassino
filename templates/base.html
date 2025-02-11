@@ -1,5 +1,5 @@
 {% load static %}
-
+{% load humanize %}
 <title>{% block 'title' %}
     {% endblock %}</title>
     <head><meta charset="utf-8">
@@ -111,7 +111,7 @@
               <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:logout' %}" ><img width="30" height="30" src="https://img.icons8.com/fluency/48/emergency-exit.png" alt="emergency-exit"/> Sair</a>
             </div>
           </li>
-          <span style="color:rgb(224, 162, 5);">Saldo: R$ {{ user.usercredit.balance|floatformat:2 }}</span>
+          <span style="color:rgb(224, 162, 5);">Saldo: R$ {{ user.usercredit.balance|intcomma }}</span>
         {% else %}
         <li class="nav-item">
             <span>Bem-vindo ao Caça-Níquel!</span>

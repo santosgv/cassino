@@ -3,62 +3,105 @@
 {% block 'title' %}
     Home
     {% endblock %}
+
+    {% block 'head' %}
+<style>
+
+
+header h1 {
+    font-size: 3rem;
+    text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.8);
+}
+
+.banner img {
+    width: 300px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px gold;
+}
+
+.banner h2 {
+    margin-top: 10px;
+    font-size: 1.5rem;
+}
+
+.rules {
+    margin-top: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table, th, td {
+    border: 1px solid gold;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+.play-button a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 30px;
+    background-color: gold;
+    color: #121212;
+    font-size: 1.5rem;
+    text-decoration: none;
+    border-radius: 10px;
+    box-shadow: 0 0 15px gold;
+}
+
+.play-button a:hover {
+    background-color: orange;
+    box-shadow: 0 0 20px orange;
+}
+
+</style>
+    
+    {% endblock%}
     {% block 'body' %}
-<h1>💰 Sistema de Pagamento Baseado nos Créditos 💰</h1>
-<br>
-<table class="table table-striped text-center">
-    <thead>
-      <tr>
-        <th scope="col">Símbolo Acertado (3 iguais)</th>
-        <th scope="col">Multiplicador de Créditos</th>
-        <th scope="col">Valor em Dinheiro (baseado no crédito de R$ 1,00)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>🍒🍒🍒 Cerejas</td>
-        <td>2x</td>
-        <td>R$ 2,00</td>
-      </tr>
-      <tr>
-        <td>🍋🍋🍋 Limões</td>
-        <td>5x</td>
-        <td>R$ 5,00</td>
-      </tr>
-      <tr>
-        <td>🍊🍊🍊 Laranjas</td>
-        <td>10x</td>
-        <td>R$ 10,00</td>
-      </tr>
-      <tr>
-        <td>🍇🍇🍇 Uvas</td>
-        <td>20x</td>
-        <td>R$ 20,00</td>
-      </tr>
-      <tr>
-        <td>🔔🔔🔔 Sinos</td>
-        <td>50x</td>
-        <td>R$ 50,00</td>
-      </tr>
-      <tr>
-        <td>⭐⭐⭐ Estrelas</td>
-        <td>100x</td>
-        <td>R$ 100,00</td>
-      </tr>
-      <tr>
-        <td>7️⃣7️⃣7️⃣ Sorte!</td>
-        <td>500x</td>
-        <td>R$ 500,00</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5>🔥 Regras do Pagamento
-    O jogador pode acumular prêmios e sacar quando atingir um valor mínimo R$ 100,00.
-    Os pagamentos podem ser feitos via Pix.</h5>
-    <br>
-    <div class="text-center">
-        <a type="button" href="{% url 'jogo' %}" class="btn btn-outline-success">Jogar Agora 🎰</a>
-    </div>
+    <div class="container-fluid text-center" style="margin-top: 10px;">
+      <header>
+          <h1>🐼 Lucky Panda Bet 🎰</h1>
+      </header>
+      <main>
+          <div class="banner">
+              <img src="{% static 'img/logo.jpg' %}" alt="Panda da Sorte">
+              <h2>Venha testar sua sorte e ganhar grandes prêmios!</h2>
+          </div>
+          <div class="rules">
+              <h3>💰 Sistema de Pagamento Baseado nos Créditos 💰</h3>
+              <div class="table-responsive">
+              <table class="table">
+                  <thead>
+                      <tr>
+                          <th>Símbolo Acertado (3 iguais)</th>
+                          <th>Multiplicador de Créditos</th>
+                          <th>Valor em Dinheiro</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr><td>🍒🍒🍒 Cerejas</td><td>2x</td><td>R$ 2,00</td></tr>
+                      <tr><td>🍋🍋🍋 Limões</td><td>5x</td><td>R$ 5,00</td></tr>
+                      <tr><td>🍊🍊🍊 Laranjas</td><td>7x</td><td>R$ 7,00</td></tr>
+                      <tr><td>🍇🍇🍇 Uvas</td><td>12x</td><td>R$ 12,00</td></tr>
+                      <tr><td>🔔🔔🔔 Sinos</td><td>20x</td><td>R$ 20,00</td></tr>
+                      <tr><td>⭐⭐⭐ Estrelas</td><td>50x</td><td>R$ 50,00</td></tr>
+                      <tr><td>7️⃣7️⃣7️⃣ Sorte!</td><td>200x</td><td>R$ 200,00</td></tr>
+                  </tbody>
+              </table>
+            </div>
+              <p>🔥 Acumule prêmios e saque a partir de R$ 100,00 via Pix!</p>
+          </div>
+          <div class="play-button">
+              <a href="{% url 'Accounts:login' %}">Jogar Agora 🎰</a>
+          </div>
+      </main>
+  </div>
 
 
 {% endblock %}

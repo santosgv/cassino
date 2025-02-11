@@ -9,8 +9,10 @@ import mercadopago
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
+from .utils import  manage_risk
+from django.views.decorators.csrf import csrf_exempt
 
-
+CASINO_PROFIT_PERCENTAGE = 0.1  # O cassino retém 10% das apostas
 MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
@@ -29,20 +31,28 @@ def jogo(request):
 
     return render(request, 'slot_machine/index.html', {'credits': user_credit.credits})
 
-@login_required(login_url='/login/') 
+#@login_required(login_url='/login/') 
 def spin(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
+    #if not request.user.is_authenticated:
+    #    return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
 
-    user_credit,created = UserCredit.objects.get_or_create(user=request.user)
+    #user_credit,created = UserCredit.objects.get_or_create(user=request.user)
+
+    # teste
+    user_credit = UserCredit.objects.get(user=1)
 
     # Verificar se o usuário tem créditos suficientes
     if user_credit.credits < 1:
         return JsonResponse({'error': 'Créditos insuficientes.'}, status=400)
 
+    # Aplicar margem de lucro do cassino (10%)
+    bet_amount = 1
+    #casino_margin = user_credit.apply_casino_margin(bet_amount)
+
     # Consumir 1 crédito
-    user_credit.credits -= 1
+    user_credit.credits -= bet_amount
     user_credit.save()
+    
 
     # Lógica do Caça-Níquel
     emojis = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣']
@@ -50,13 +60,12 @@ def spin(request):
 
     # Probabilidades por nível (quanto maior o nível, maior a chance de ganhar os maiores prêmios)
     level_weights = {
-        1: [80, 15, 3, 1, 0.5, 0.3, 0.2],      # Nível 1: Muitas chances de ganhar prêmios pequenos
+        1: [80, 15, 3, 1, 0.5, 0.4, 0.1],      # Nível 1: Muitas chances de ganhar prêmios pequenos
         2: [70, 20, 5, 3, 1, 0.5, 0.5],          # Nível 2: 90% de chances de 5x, poucos prêmios maiores  
         3: [50, 30, 10, 5, 3, 1.5, 0.5],             # Nível 3: Equilibrado
-        4: [30, 30, 20, 10, 5, 3, 2,5],          # Nível 4: Difícil ganhar qualquer coisa além de 2x e 5x  
-        5: [30, 30, 20, 10, 5, 2,5, 2,5],          # Nível 5: Mais chances de ganhar os prêmios altos
+        4: [30, 30, 20, 10, 5, 3, 2.5],          # Nível 4: Difícil ganhar qualquer coisa além de 2x e 5x  
+        5: [0.5, 0.5, 0.5, 0.5,0.5, 0.5, 0.5]         # Nível 5: Mais chances de ganhar os prêmios altos
     }
-
 
     # Ajustar nível de dificuldade baseado nos créditos e saldo
     if user_credit.credits > 100 or user_credit.balance > 100:
@@ -69,8 +78,17 @@ def spin(request):
 
     results = random.choices(emojis, weights=weights, k=3)
 
+
+    #results = manage_risk(user_id=user_credit.user.id, bet_amount=1, possible_payouts={
+    #    1: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+    #    2: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+    #    3: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+    #    4: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+    #    5: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣']
+    #})
+
     print(results)
-    print(user_level)
+    #print(user_level)
 
     # Verificar se há um ganhador e aplicar o multiplicador
     if len(set(results)) == 1:  # Se todos os símbolos forem iguais
@@ -78,29 +96,20 @@ def spin(request):
         multipliers = {
             '🍒': 2,
             '🍋': 5,
-            '🍊': 10,
-            '🍇': 20,
-            '🔔': 50,
-            '⭐': 100,
-            '7️⃣': 500,
+            '🍊': 7,
+            '🍇': 12,
+            '🔔': 20,
+            '⭐': 50,
+            '7️⃣': 200,
         }
         multiplier = multipliers.get(symbol, 0)  # Obtém o multiplicador ou 0 se não encontrado
         credits_won = (user_credit.credits + 1) * (multiplier)  # Créditos ganhos (baseado no multiplicador)
+        winnings_after_cut = int(credits_won * (1 - CASINO_PROFIT_PERCENTAGE))
+        
+
         user_credit.credits += credits_won  # Adiciona os créditos ganhos ao saldo
+        user_credit.update_stats(bet_amount, 1)
 
-        # **Regras para impedir ganhos excessivos**
-        if user_credit.level in [1, 2]:  
-            if user_credit.credits + credits_won > 100:  
-                credits_won = 100 - user_credit.credits  # Ajusta para não passar de 100  
-
-        elif user_credit.level >= 3:  
-            if credits_won > user_credit.credits * 2:  
-                credits_won = user_credit.credits  # Impede ganhos absurdos  
-        
-        # **Nível 4 e 5 não podem ganhar acima do x2**
-        if user_credit.level >= 4 and credits_won > user_credit.credits:
-            credits_won = 0  # Sem ganhos a partir do nível 4
-        
         # Aumentar o nível se ganhou
         if user_credit.level < 5:
             user_credit.level += 1
@@ -108,8 +117,10 @@ def spin(request):
         user_credit.save()
         message = f"Você ganhou x{multiplier}"
     else:
+        user_credit.update_stats(bet_amount, -1)
         message = "Tente novamente!"
 
+    user_credit.save()
     return JsonResponse({'results': results, 'message': message, 'credits': user_credit.credits})
 
 @login_required(login_url='/login/')  
@@ -117,19 +128,26 @@ def roleta(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'roleta/index.html', {'credits': user_credit.credits})
 
-@login_required
+#@login_required
+@csrf_exempt 
 def spin_roulette(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
+    #if not request.user.is_authenticated:
+    #    return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
 
     # Simulação de créditos do usuário (substitua por seu modelo real)
-    user_credit,created = UserCredit.objects.get_or_create(user=request.user)
+    user_credit = UserCredit.objects.get(user=1)
+    #user_credit,created = UserCredit.objects.get_or_create(user=request.user)
 
     # Verificar se o usuário tem créditos suficientes
     if user_credit.credits < 1:
         return JsonResponse({'error': 'Créditos insuficientes.'}, status=400)
 
-    user_credit.credits -= 5
+    # Aplicar margem de lucro do cassino (10%)
+    bet_amount = 5
+    casino_margin = user_credit.apply_casino_margin(bet_amount)
+
+    # Consumir 5 créditos
+    user_credit.credits -= bet_amount
     user_credit.save()
 
     # Definir as opções da roleta e suas probabilidades
@@ -145,7 +163,7 @@ def spin_roulette(request):
         {'label': 'Perde Tudo', 'multiplier': -1},
         {'label': 'Passa a Vez', 'multiplier': 0}
     ]
-    weights = [40,0.5,0.5,7,1,10,0.5,0.5,10,40] 
+    weights = [22.5, 2, 0.5, 22.5, 0.1, 22.5, 2, 0.5, 22.5, 22.5]
 
     # Sortear um resultado
     result_index = random.choices(range(len(outcomes)), weights=weights, k=1)[0]
@@ -159,7 +177,8 @@ def spin_roulette(request):
 
     # Salvar créditos (substitua por sua lógica de salvamento)
 
-    user_credit.save()
+    #user_credit.update_stats(bet_amount, user_credit.credits)
+    #user_credit.save()
 
     print(result_index)
 
