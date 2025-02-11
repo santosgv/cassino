@@ -5,14 +5,14 @@ from django.contrib.auth.decorators import login_required
 from .models import UserCredit,TransactionHistory
 from accounts.models import Withdrawal
 from django.contrib import messages
-import mercadopago
+#import mercadopago
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
-from .utils import  manage_risk
+from .utils import  manage_risk,get_bet_amount
 from django.views.decorators.csrf import csrf_exempt
 
-CASINO_PROFIT_PERCENTAGE = 0.1  # O cassino retém 10% das apostas
+
 MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
@@ -44,51 +44,29 @@ def spin(request):
     # Verificar se o usuário tem créditos suficientes
     if user_credit.credits < 1:
         return JsonResponse({'error': 'Créditos insuficientes.'}, status=400)
-
-    # Aplicar margem de lucro do cassino (10%)
-    bet_amount = 1
-    #casino_margin = user_credit.apply_casino_margin(bet_amount)
+    
+    bet_amount = get_bet_amount(user_credit.level)
+    
 
     # Consumir 1 crédito
     user_credit.credits -= bet_amount
     user_credit.save()
-    
 
-    # Lógica do Caça-Níquel
-    emojis = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣']
-    
+    results = manage_risk(
+        user_id=user_credit.user.id, 
+        bet_amount=bet_amount, 
+        possible_payouts={
+            1: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+            2: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+            3: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+            4: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
+            5: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣']
+        }
+    )
 
-    # Probabilidades por nível (quanto maior o nível, maior a chance de ganhar os maiores prêmios)
-    level_weights = {
-        1: [80, 15, 3, 1, 0.5, 0.4, 0.1],      # Nível 1: Muitas chances de ganhar prêmios pequenos
-        2: [70, 20, 5, 3, 1, 0.5, 0.5],          # Nível 2: 90% de chances de 5x, poucos prêmios maiores  
-        3: [50, 30, 10, 5, 3, 1.5, 0.5],             # Nível 3: Equilibrado
-        4: [30, 30, 20, 10, 5, 3, 2.5],          # Nível 4: Difícil ganhar qualquer coisa além de 2x e 5x  
-        5: [0.5, 0.5, 0.5, 0.5,0.5, 0.5, 0.5]         # Nível 5: Mais chances de ganhar os prêmios altos
-    }
-
-    # Ajustar nível de dificuldade baseado nos créditos e saldo
-    if user_credit.credits > 100 or user_credit.balance > 100:
-        user_level = random.choice([4, 5])  # Se tem mais de 100 créditos, joga nos níveis mais difíceis
-    else:
-        user_level = min(user_credit.level, 5)  # Máximo nível 5
-
-    weights = level_weights[user_level]
-
-
-    results = random.choices(emojis, weights=weights, k=3)
-
-
-    #results = manage_risk(user_id=user_credit.user.id, bet_amount=1, possible_payouts={
-    #    1: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
-    #    2: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
-    #    3: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
-    #    4: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'],
-    #    5: ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣']
-    #})
 
     print(results)
-    #print(user_level)
+    print(bet_amount)
 
     # Verificar se há um ganhador e aplicar o multiplicador
     if len(set(results)) == 1:  # Se todos os símbolos forem iguais
@@ -102,14 +80,13 @@ def spin(request):
             '⭐': 50,
             '7️⃣': 200,
         }
-        multiplier = multipliers.get(symbol, 0)  # Obtém o multiplicador ou 0 se não encontrado
-        credits_won = (user_credit.credits + 1) * (multiplier)  # Créditos ganhos (baseado no multiplicador)
-        winnings_after_cut = int(credits_won * (1 - CASINO_PROFIT_PERCENTAGE))
         
-
-        user_credit.credits += credits_won  # Adiciona os créditos ganhos ao saldo
+        multiplier = multipliers.get(symbol, 0) 
+        credits_won = bet_amount * multiplier
+        user_credit.credits += credits_won  
         user_credit.update_stats(bet_amount, 1)
 
+        
         # Aumentar o nível se ganhou
         if user_credit.level < 5:
             user_credit.level += 1
@@ -120,7 +97,6 @@ def spin(request):
         user_credit.update_stats(bet_amount, -1)
         message = "Tente novamente!"
 
-    user_credit.save()
     return JsonResponse({'results': results, 'message': message, 'credits': user_credit.credits})
 
 @login_required(login_url='/login/')  

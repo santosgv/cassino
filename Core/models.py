@@ -8,12 +8,14 @@ class UserCredit(models.Model):
     credits = models.IntegerField(default=0)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     level = models.IntegerField(default=1)
+    max_credits = models.IntegerField(default=0)
     total_bet = models.IntegerField(default=0)
     total_won = models.IntegerField(default=0)
 
     def update_stats(self, bet_amount, won_amount):
         self.total_bet += bet_amount
         self.total_won += won_amount
+        self.credits = min(self.credits, self.max_credits)
         self.save()
 
     def apply_casino_margin(self, bet_amount):

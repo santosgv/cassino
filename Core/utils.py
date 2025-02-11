@@ -2,37 +2,65 @@ from .models import UserCredit
 import random
 
 
+def get_bet_amount(level):
+    return max(1, min(level, 5))
 
 def manage_risk(user_id, bet_amount, possible_payouts):
     user_credit = UserCredit.objects.get(user=user_id)
 
-    # Verificar o nível do usuário para ajustar as probabilidades
-    user_level = min(user_credit.level, 5)
+    # 🎯 Definir retorno esperado para garantir lucro do cassino
+    RETURN_EXPECTED = 0.85  # Jogador recebe no máximo 85% do que aposta no longo prazo
 
-    # Definir a tabela de probabilidades baseada no nível do usuário
+    # 🔢 Probabilidades iniciais baseadas no nível do usuário
     level_weights = {
-        1: [80, 15, 3, 1, 0.5, 0.4, 0.1], 
+        1: [70, 25, 3, 1, 0.5, 0.4, 0.1], 
         2: [70, 20, 5, 3, 1, 0.5, 0.5],  
         3: [50, 30, 10, 5, 3, 1.5, 0.5], 
         4: [30, 30, 20, 10, 5, 3, 2.5],  
-        5: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]  
+        5: [5, 5, 30, 25, 20, 10, 5] 
     }
     
-    weights = level_weights[user_level]
+    base_weights = level_weights.get(user_credit.level, level_weights[1])  # Evita erro se nível for inválido
 
-    # Verifica se o jogador está ganhando muito e ajusta para reduzir os ganhos
-    if user_credit.balance > 100:  
-        weights = [w * 0.5 for w in weights]  # Reduz as chances de ganhos altos
+    # 🔄 Ajuste Dinâmico: Se jogador estiver ganhando muito, reduzir chance de vitória
+    if user_credit.credits >= user_credit.max_credits * 0.5:
+        base_weights = [w * 0.2 for w in base_weights]  # Reduz 80% das chances de ganhar
 
-    # Se o cassino estiver perdendo dinheiro, reduz ainda mais os prêmios
-    if user_credit.balance > 500:  
-        weights = [w * 0.3 for w in weights]
+    if user_credit.credits >= user_credit.max_credits * 0.75:
+        base_weights = [w * 0.05 for w in base_weights]  # Reduz 95% das chances
 
-    # Normaliza para garantir que a soma das probabilidades seja 100%
-    total_weight = sum(weights)
-    normalized_weights = [w / total_weight for w in weights]
+    # 📊 Ajuste para garantir lucro a longo prazo
+    total_weight = sum(base_weights)
+    normalized_weights = [w / total_weight for w in base_weights]
 
-    # Escolhe o resultado com base nas probabilidades ajustadas
-    result = random.choices(list(possible_payouts[user_level]), weights=normalized_weights, k=3)
+    # 🔢 Simulação de múltiplas rodadas para verificar retorno esperado
+    simulated_wins = 0
+    simulated_losses = 0
+    for _ in range(10000):  # Simulação com 10.000 rodadas
+        result = random.choices(
+            list(possible_payouts[user_credit.level]),
+            weights=normalized_weights,
+            k=3
+        )
+
+        if len(set(result)) == 1:  # Se todos os símbolos forem iguais
+            symbol = result[0]
+            multipliers = {'🍒': 2, '🍋': 5, '🍊': 7, '🍇': 12, '🔔': 20, '⭐': 50, '7️⃣': 200}
+            simulated_wins += bet_amount * multipliers.get(symbol, 0)
+        else:
+            simulated_losses += bet_amount
+
+    actual_return = simulated_wins / max(simulated_losses, 1)  # Evita divisão por zero
+
+    # 📉 Se retorno for maior do que esperado, reduz chances de vitória
+    if actual_return > RETURN_EXPECTED:
+        normalized_weights = [w * 0.8 for w in normalized_weights]
+
+    # Escolher resultado final
+    result = random.choices(
+        list(possible_payouts[user_credit.level]),
+        weights=normalized_weights,
+        k=3
+    )
 
     return result
