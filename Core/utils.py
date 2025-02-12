@@ -17,7 +17,7 @@ def manage_risk(user_id, bet_amount, possible_payouts):
         2: [70, 20, 5, 3, 1, 0.5, 0.5],  
         3: [50, 30, 10, 5, 3, 1.5, 0.5], 
         4: [30, 30, 20, 10, 5, 3, 2.5],  
-        5: [5, 5, 30, 25, 20, 10, 5] 
+        5: [15, 15, 20, 20, 10, 10, 10] 
     }
     
     base_weights = level_weights.get(user_credit.level, level_weights[1])  # Evita erro se nível for inválido
@@ -36,7 +36,7 @@ def manage_risk(user_id, bet_amount, possible_payouts):
     # 🔢 Simulação de múltiplas rodadas para verificar retorno esperado
     simulated_wins = 0
     simulated_losses = 0
-    for _ in range(10000):  # Simulação com 10.000 rodadas
+    for _ in range(2000):  # Simulação com 10.000 rodadas
         result = random.choices(
             list(possible_payouts[user_credit.level]),
             weights=normalized_weights,
@@ -63,4 +63,6 @@ def manage_risk(user_id, bet_amount, possible_payouts):
         k=3
     )
 
+    print(f' Possibilidade de vitoria {simulated_wins}')
+    print(f' Possibilidade de perca {simulated_losses}')
     return result

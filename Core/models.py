@@ -18,13 +18,6 @@ class UserCredit(models.Model):
         self.credits = min(self.credits, self.max_credits)
         self.save()
 
-    def apply_casino_margin(self, bet_amount):
-        # Aplica a margem de lucro do cassino (10%)
-        casino_margin = int(bet_amount * 0.10)
-        self.credits -= casino_margin
-        self.save()
-        return casino_margin
-
     def __str__(self):
         return f"{self.user.username} - {self.credits} créditos - R$ {self.balance} - Nível {self.level}"
 
