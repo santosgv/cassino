@@ -15,7 +15,7 @@ class UserCredit(models.Model):
     def update_stats(self, bet_amount, won_amount):
         self.total_bet += bet_amount
         self.total_won += won_amount
-        self.credits = min(self.credits, self.max_credits)
+        self.credits = max(0, min(self.credits, self.max_credits)) 
         self.save()
 
     def __str__(self):
