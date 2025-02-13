@@ -12,7 +12,6 @@ from django.core.paginator import Paginator
 from .utils import  manage_risk,get_bet_amount
 from django.views.decorators.csrf import csrf_exempt
 
-MAX_WIN = 100 
 MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
@@ -82,7 +81,7 @@ def spin(request):
         }
         
         multiplier = multipliers.get(symbol, 0) 
-        credits_won = min(bet_amount * multiplier, MAX_WIN)
+        credits_won = user_credit.credits * multiplier
         user_credit.credits += credits_won  
         user_credit.update_stats(bet_amount, 1)
 
