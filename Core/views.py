@@ -107,12 +107,12 @@ def roleta(request):
 #@login_required
 @csrf_exempt 
 def spin_roulette(request):
-    #if not request.user.is_authenticated:
-    #    return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
 
     # Simulação de créditos do usuário (substitua por seu modelo real)
-    user_credit = UserCredit.objects.get(user=1)
-    #user_credit,created = UserCredit.objects.get_or_create(user=request.user)
+    #user_credit = UserCredit.objects.get(user=1)
+    user_credit,created = UserCredit.objects.get_or_create(user=request.user)
 
     # Verificar se o usuário tem créditos suficientes
     if user_credit.credits < 1:
@@ -124,7 +124,7 @@ def spin_roulette(request):
 
     # Consumir 5 créditos
     user_credit.credits -= bet_amount
-    #user_credit.save()
+    user_credit.save()
 
     # Definir as opções da roleta e suas probabilidades
     outcomes = [
@@ -136,10 +136,8 @@ def spin_roulette(request):
         {'label': 'Perde Tudo', 'multiplier': -1},
         {'label': 'x2', 'multiplier': 2},
         {'label': 'x5', 'multiplier': 5},
-        {'label': 'Perde Tudo', 'multiplier': -1},
-        {'label': 'Passa a Vez', 'multiplier': 0}
     ]
-    weights = [22.5, 2, 0.5, 22.5, 0.1, 22.5, 2, 0.5, 22.5, 22.5]
+    weights = [40, 3, 1, 40, 0.05, 40, 3, 1]
 
     # Sortear um resultado
     result_index = random.choices(range(len(outcomes)), weights=weights, k=1)[0]
@@ -147,15 +145,15 @@ def spin_roulette(request):
 
     # Atualizar créditos do usuário com base no resultado
     if result['multiplier'] == -1:
-        #user_credit.credits = 0  # Perde tudo
-        pass
+        user_credit.credits = 0  # Perde tudo
+        
     elif result['multiplier'] > 0:
         user_credit.credits *= result['multiplier']  # Multiplica créditos
 
     # Salvar créditos (substitua por sua lógica de salvamento)
 
-    #user_credit.update_stats(bet_amount, user_credit.credits)
-    #user_credit.save()
+    user_credit.update_stats(bet_amount, user_credit.credits)
+    user_credit.save()
 
     print(result_index,result['label'])
 

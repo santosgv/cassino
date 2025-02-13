@@ -17,9 +17,9 @@
                 font-family: Arial, sans-serif;
             }
             .wheel-container {
-    position: relative;
-    width: 300px;
-    height: 300px;
+                position: relative;
+                width: 300px;
+                height: 300px;
 }
 .wheel {
     position: absolute;
@@ -28,11 +28,12 @@
     width: 100%;
     height: 100%;
     background-color: gold;
+    transition: transform 5s ease-out;
     border-radius: 50%;
     overflow: hidden;
     box-shadow: 0 0 0 5px #333,
-    0 0 0 15px #fff,
-    0 0 0 18px #fff;
+    0 0 0 15px gold,
+    0 0 0 18px gold;
 }
 
 .wheel .number{
@@ -42,7 +43,7 @@
     background-color: var(--clr);
     transform-origin: bottom right;
     transform: rotate(calc(45deg * var(--i)));
-    clip-path: polygon(0 0,59% 0, 100% 100%, 0 59%);
+    clip-path: polygon(0 0,60% 0, 100% 100%, 0 60%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -57,6 +58,7 @@
 .light.active {
     background-color: yellow !important; /* Destaque da luz */
     box-shadow: 0 0 10px yellow;
+    
 }
 
 .number span {
@@ -87,9 +89,35 @@
     border: 4px solid #333;
     cursor: pointer;
     user-select: none;
+    animation: pulse 0.7s infinite;
+    animation-direction: alternate;
+   -webkit-animation-name: pulse;
+    animation-name: pulse;
 
 }
 
+
+@-webkit-keyframes pulse {
+  0% {
+    -webkit-transform: scale(1);
+    -webkit-filter: brightness(100%);
+  }
+  100% {
+    -webkit-transform: scale(1.1);
+    -webkit-filter: brightness(200%);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(100%);
+  }
+  100% {
+    transform: scale(1.1);
+    filter: brightness(200%);
+  }
+}
 
 
 
@@ -103,22 +131,21 @@
 
         {% block 'body' %}
         <div class="credits" id="credits" style="color: #fff; background-color: #333; border: solid; border-radius: 10px; padding: 10px;">Créditos: {{credits}}</div> <!-- Exibir créditos -->
-        <div class="wheel-container" style="margin-top: 10px;">
+        <div class="wheel-container" style="margin-top: 30px;">
             <div class="marker" onclick="spinWheel()">Girar</div>
             <div class="wheel" id="wheel">
-                <div id="0" class="number light" style="--i:0;--clr:#772238;"><span>Perde</span></div>
-                <div id="1" class="number light" style="--i:1;--clr:#220009;"><span>x2</span></div>
-                <div id="2" class="number light" style="--i:2;--clr:#78a0db;"><span>x5</span></div>
-                <div id="3" class="number light" style="--i:3;--clr:#a5db78;"><span>Perde</span></div>
-                <div id="4" class="number light" style="--i:4;--clr:#db9c78;"><span>x20</span></div>
-                <div id="5" class="number light" style="--i:5;--clr:#d63912;"><span>Perde</span></div>
-                <div id="6" class="number light" style="--i:6;--clr:#000000;"><span>x2</span></div>
-                <div id="7" class="number light" style="--i:7;--clr:#12426e;"><span>x5</span></div>
-                <div id="8" class="number light" style="--i:8;--clr:#b1156b;"><span>Perde</span></div>
-                <div id="9" class="number light" style="--i:9;--clr:#37b810;"><span>Passa</span></div>
+                <div id="0" class="number light" style="--i:0;--clr:#070707;"><span>💀</span></div>
+                <div id="1" class="number light" style="--i:1;--clr:#ff0000;"><span>x2</span></div>
+                <div id="2" class="number light" style="--i:2;--clr:#090df3;"><span>x5</span></div>
+                <div id="3" class="number light" style="--i:3;--clr:#000000;"><span>💀</span></div>
+                <div id="4" class="number light" style="--i:4;--clr:#09d81b;"><span>x20</span></div>
+                <div id="5" class="number light" style="--i:5;--clr:#000000;"><span>💀</span></div>
+                <div id="6" class="number light" style="--i:6;--clr:#ff0000;"><span>x2</span></div>
+                <div id="7" class="number light" style="--i:7;--clr:#090df3;"><span>x5</span></div>
+
             </div>
         </div>
-        <p id="result"></p>
+        <p id="result" style="padding-top: 10px;"></p>
         
             <script>
 
