@@ -22,85 +22,76 @@
     height: 300px;
 }
 .wheel {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 10px solid gold;
-    box-shadow: 0 0 20px gold;
-    transition: transform 5s ease-out;
-    background: conic-gradient(
-        #333 0deg 36deg,           /* 0  */
-        #ffaf02 36deg 72deg,       /*  1 */
-        #00ff00 72deg 108deg,      /*  2 */
-        #0099ff 108deg 144deg,     /*  3 */
-        #00ff00 144deg 180deg,     /*  4 */
-        #333 180deg 216deg,        /*  5 */
-        #ffaf02 216deg 252deg,     /*  6 */
-        #00ff00 252deg 288deg,     /*  7 */
-        #ec0606 288deg 324deg,     /*  8 */
-        #5f5d5d 324deg 360deg      /*  9 */
-    );
-    position: relative;
-    overflow: hidden;
-}
-.marker {
-    position: absolute;
-    top: 45%; /* Ajustado para posicionar na borda superior */
-    left: 50%;
-    transform: translateX(-50%)rotate(10deg);;
-    width: 20;
-    height: 20;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 30px solid gold; /* Triângulo dourado */
-    z-index: 1000;
-}
-.spin-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: gold;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 0 10px gold;
-}
-.spin-button:hover {
-    background-color: orange;
-}
-.prizes {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-.prizes div {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    transform-origin: center;
+    background-color: gold;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 0 0 5px #333,
+    0 0 0 15px #fff,
+    0 0 0 18px #fff;
 }
 
-.prizes div:nth-child(1) { transform: rotate(18deg) translateY(-120px); }
-.prizes div:nth-child(2) { transform: rotate(54deg) translateY(-120px); }
-.prizes div:nth-child(3) { transform: rotate(90deg) translateY(-120px); }
-.prizes div:nth-child(4) { transform: rotate(126deg) translateY(-120px); }
-.prizes div:nth-child(5) { transform: rotate(162deg) translateY(-120px); }
-.prizes div:nth-child(6) { transform: rotate(198deg) translateY(-120px); }
-.prizes div:nth-child(7) { transform: rotate(234deg) translateY(-120px); }
-.prizes div:nth-child(8) { transform: rotate(270deg) translateY(-120px); }
-.prizes div:nth-child(9) { transform: rotate(306deg) translateY(-120px); }
-.prizes div:nth-child(10) { transform: rotate(342deg) translateY(-120px); }
+.wheel .number{
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    background-color: var(--clr);
+    transform-origin: bottom right;
+    transform: rotate(calc(45deg * var(--i)));
+    clip-path: polygon(0 0,59% 0, 100% 100%, 0 59%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+ 
+}
+
+.light {
+    transition: background-color 0.1s ease;
+}
+
+.light.active {
+    background-color: yellow !important; /* Destaque da luz */
+    box-shadow: 0 0 10px yellow;
+}
+
+.number span {
+    position: relative;
+    transform: rotate(45deg);
+    font-size: 2em;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 3px 5px 2px rgba(0, 0, 0, 0.15);
+}
+
+.marker {
+    position: absolute;
+    top: 40%;
+    left: 40%;
+    width: 60px;
+    height: 60px;
+    background-color: gold;
+    border-radius: 50%;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.1em;
+    border: 4px solid #333;
+    cursor: pointer;
+    user-select: none;
+
+}
+
+
+
 
 #result {
     margin-top: 20px;
@@ -113,37 +104,33 @@
         {% block 'body' %}
         <div class="credits" id="credits" style="color: #fff; background-color: #333; border: solid; border-radius: 10px; padding: 10px;">Créditos: {{credits}}</div> <!-- Exibir créditos -->
         <div class="wheel-container" style="margin-top: 10px;">
-            <div class="marker"></div>
+            <div class="marker" onclick="spinWheel()">Girar</div>
             <div class="wheel" id="wheel">
-                <div class="prizes">
-                    <div id="0">Perde</div>
-                    <div id="1">x2</div>
-                    <div id="2">x5</div>
-                    <div id="3">Perde</div>
-                    <div id="4">x20</div>
-                    <div id="5">Perde</div>
-                    <div id="6">x2</div>
-                    <div id="7">x5</div>
-                    <div id="8">Perde</div>
-                    <div id="9">Passa</div>
-                </div>
+                <div id="0" class="number light" style="--i:0;--clr:#772238;"><span>Perde</span></div>
+                <div id="1" class="number light" style="--i:1;--clr:#220009;"><span>x2</span></div>
+                <div id="2" class="number light" style="--i:2;--clr:#78a0db;"><span>x5</span></div>
+                <div id="3" class="number light" style="--i:3;--clr:#a5db78;"><span>Perde</span></div>
+                <div id="4" class="number light" style="--i:4;--clr:#db9c78;"><span>x20</span></div>
+                <div id="5" class="number light" style="--i:5;--clr:#d63912;"><span>Perde</span></div>
+                <div id="6" class="number light" style="--i:6;--clr:#000000;"><span>x2</span></div>
+                <div id="7" class="number light" style="--i:7;--clr:#12426e;"><span>x5</span></div>
+                <div id="8" class="number light" style="--i:8;--clr:#b1156b;"><span>Perde</span></div>
+                <div id="9" class="number light" style="--i:9;--clr:#37b810;"><span>Passa</span></div>
             </div>
         </div>
-        <button class="spin-button" onclick="spinWheel()">Girar</button>
         <p id="result"></p>
         
             <script>
 
-function spinWheel() {
-    const wheel = document.getElementById("wheel");
+
+    function spinWheel() {
     const resultText = document.getElementById("result");
-    let credits = {{ credits }};
+    let credits = parseInt(document.getElementById('credits').textContent.match(/\d+/)[0], 10);
 
     if (credits < 1) {
-                alert('Créditos insuficientes!');
-                return;
-            }
-    
+        alert('Créditos insuficientes!');
+        return;
+    }
 
     fetch("/spin_roulette/", {
         method: 'POST',
@@ -160,36 +147,49 @@ function spinWheel() {
             return;
         }
 
-        const degreesPerSection = 36; // Cada seção tem 36  (360° / 10 setores)
-        const fullRotations = 5; // Giros completos para realismo
+        const sectors = document.querySelectorAll('.number'); // Seleciona os setores da roleta
+        const totalSectors = sectors.length;
+        let currentIndex = 0;
+        let speed = 100; // Velocidade inicial
+        let rounds = 3; // Número mínimo de voltas antes de desacelerar
+        let finalIndex = parseInt(data.index, 10);
+        let slowdown = false;
 
-        // ** Ajuste exato para alinhar com o marcador **
-        const offset = 360 - (data.index * degreesPerSection); 
+        function highlightSector() {
+            // Resetando a classe de todos os setores
+            sectors.forEach(sector => sector.classList.remove('active'));
 
-        // Definir rotação final considerando giros completos
-        const finalDegree = (fullRotations * 360) + offset;
+            // **Se já chegou no índice correto, para aqui antes de avançar**
+            if (slowdown && currentIndex === finalIndex) {
+                sectors[finalIndex].classList.add('active'); // **Mantém o setor final iluminado**
+                document.getElementById('credits').textContent = `Créditos: ${data.credits}`;
+                resultText.innerText = `${data.result} | Créditos: ${data.credits}`;
+                return;
+            }
 
-        // Resetar animação anterior
-        wheel.style.transition = "none";
-        wheel.style.transform = `rotate(0deg)`;
+            // Ativar o setor atual
+            sectors[currentIndex].classList.add('active');
 
-        setTimeout(() => {
-            wheel.style.transition = "transform 3s ease-out";
-            wheel.style.transform = `rotate(${finalDegree}deg)`;
-        }, 50);
+            // Avançar para o próximo setor
+            currentIndex = (currentIndex + 1) % totalSectors;
 
-        // Exibir resultado após a animação
-        setTimeout(() => {
-            credits = data.credits;
-            document.getElementById('credits').textContent = `Créditos: ${credits}`;
-            resultText.innerText = `${data.result} | Créditos: ${data.credits}`;
-        }, 3100);
+            if (rounds > 0) {
+                rounds--; // Reduz o número de voltas obrigatórias
+            } else if (currentIndex === finalIndex) {
+                slowdown = true; // Ativar desaceleração
+            }
+
+            // Reduzir a velocidade gradualmente para efeito de desaceleração
+            speed += 10;
+            setTimeout(highlightSector, speed);
+        }
+
+        highlightSector(); // Inicia a rotação de luzes
     })
     .catch(error => {
         resultText.innerText = "Erro: " + error.message;
     });
 }
-
 // Função para obter o cookie CSRF
 function getCookie(name) {
     let cookieValue = null;

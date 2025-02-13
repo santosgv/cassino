@@ -120,11 +120,11 @@ def spin_roulette(request):
 
     # Aplicar margem de lucro do cassino (10%)
     bet_amount = 5
-    casino_margin = user_credit.apply_casino_margin(bet_amount)
+
 
     # Consumir 5 créditos
     user_credit.credits -= bet_amount
-    user_credit.save()
+    #user_credit.save()
 
     # Definir as opções da roleta e suas probabilidades
     outcomes = [
@@ -147,7 +147,8 @@ def spin_roulette(request):
 
     # Atualizar créditos do usuário com base no resultado
     if result['multiplier'] == -1:
-        user_credit.credits = 0  # Perde tudo
+        #user_credit.credits = 0  # Perde tudo
+        pass
     elif result['multiplier'] > 0:
         user_credit.credits *= result['multiplier']  # Multiplica créditos
 
@@ -156,7 +157,7 @@ def spin_roulette(request):
     #user_credit.update_stats(bet_amount, user_credit.credits)
     #user_credit.save()
 
-    print(result_index)
+    print(result_index,result['label'])
 
     # Retornar o resultado e o índice
     return JsonResponse({
