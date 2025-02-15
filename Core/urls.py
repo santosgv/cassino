@@ -15,6 +15,7 @@ urlpatterns = [
 
     path("purchase/<str:package_name>/", views.purchase_credits, name="purchase_credits"),
     path("purchase/success/<str:package_name>/", views.purchase_success, name="purchase_success"),
+     path("mercadopago/webhook/", views.mercado_pago_webhook, name="mercado_pago_webhook"),
     path("purchase/failure/", views.purchase_failure, name="purchase_failure"),
     path("purchase/pending/", views.purchase_pending, name="purchase_pending")
 ]

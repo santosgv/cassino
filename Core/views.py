@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .models import UserCredit,TransactionHistory
 from accounts.models import Withdrawal
 from django.contrib import messages
-#import mercadopago
+import mercadopago
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -223,8 +223,63 @@ def purchase_credits(request, package_name):
 
     preference_response = mp.preference().create(preference_data)
     payment_link = preference_response["response"]["init_point"]
+    print(payment_link)
 
     return redirect(payment_link)
+
+
+@csrf_exempt
+def mercado_pago_webhook(request):
+    """ Webhook para ouvir notificações de pagamento do Mercado Pago """
+    
+    if request.method == "POST":
+        try:
+            # Obtendo os dados enviados pelo Mercado Pago
+            data = json.loads(request.body)
+            payment_id = data.get("data", {}).get("id")
+
+            if not payment_id:
+                return JsonResponse({"error": "ID de pagamento não encontrado"}, status=400)
+
+            # Conectando à API do Mercado Pago
+            mp = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
+            payment_info = mp.payment().get(payment_id)
+
+            if "response" not in payment_info or payment_info["response"].get("status") != "approved":
+                return JsonResponse({"error": "Pagamento não aprovado"}, status=400)
+
+            # Pegando os detalhes do pagamento
+            payment_data = payment_info["response"]
+            email = payment_data["payer"]["email"]
+            amount_paid = payment_data["transaction_amount"]
+
+            # Encontrando o usuário pelo email
+            user = User.objects.filter(email=email).first()
+            if not user:
+                return JsonResponse({"error": "Usuário não encontrado"}, status=400)
+
+            # Verificando qual pacote foi comprado
+            purchased_credits = None
+            for package_name, package in PACKAGES.items():
+                if float(package["price"]) == amount_paid:
+                    purchased_credits = package["credits"]
+                    break
+
+            if purchased_credits is None:
+                return JsonResponse({"error": "Pacote não encontrado"}, status=400)
+
+            # Atualizando os créditos do usuário
+            user_credit, created = UserCredit.objects.get_or_create(user=user)
+            user_credit.credits += purchased_credits
+            user_credit.save()
+
+            return JsonResponse({"message": "Pagamento processado com sucesso"}, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Método inválido"}, status=405)
+
 
 @login_required(login_url='/login/') 
 def purchase_success(request, package_name):
