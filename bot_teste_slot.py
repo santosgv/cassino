@@ -71,5 +71,5 @@ def run_tests(url, num_requests):
 
 # Exemplo de uso
 url = "http://127.0.0.1:8000/spin/"  # Substitua pela URL real
-num_requests = 100  # Defina o número de requisições desejadas
+num_requests = 1300  # Defina o número de requisições desejadas
 run_tests(url, num_requests)

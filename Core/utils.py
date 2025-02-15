@@ -9,37 +9,34 @@ def get_bet_amount(level):
 def manage_risk(user_id, bet_amount, possible_payouts):
     user_credit = UserCredit.objects.get(user=user_id)
 
-    # 🔢 Probabilidades iniciais baseadas no nível do usuário
-    level_weights = {
-        1: [70, 25, 3, 1, 0.5, 0.4, 0.1], 
-        2: [70, 20, 5, 3, 1, 0.5, 0.5],  
-        3: [50, 30, 10, 5, 3, 1.5, 0.5], 
-        4: [30, 30, 20, 10, 5, 3, 2.5],  
-        5: [15, 15, 20, 20, 10, 10, 10] 
-    }
-    
-    base_weights = level_weights.get(user_credit.level, level_weights[1])  # Evita erro se nível for inválido
+    # Definir probabilidades fixas: 8% de chance de ganhar, 8% de chance de perder
+    if random.random() <= 0.02:  # 8% de chance de ganhar
+        # Escolher um símbolo vencedor com base no nível do usuário
+        level_weights = {
+            1: [70, 25, 3, 1, 0.5, 0.4, 0.1],  # Pesos para cada símbolo no nível 1
+            2: [70, 20, 5, 3, 1, 0.5, 0.5],   # Pesos para cada símbolo no nível 2
+            3: [50, 30, 10, 5, 3, 1.5, 0.5],  # Pesos para cada símbolo no nível 3
+            4: [30, 30, 20, 10, 5, 3, 2.5],   # Pesos para cada símbolo no nível 4
+            5: [15, 15, 20, 20, 10, 10, 10]    # Pesos para cada símbolo no nível 5
+        }
+        base_weights = level_weights.get(user_credit.level, level_weights[1])  # Usar nível 1 como padrão
+        total_weight = sum(base_weights)
+        normalized_weights = [w / total_weight for w in base_weights]
 
-    # 📊 Ajuste para garantir lucro a longo prazo
-    total_weight = sum(base_weights)
-    normalized_weights = [w / total_weight for w in base_weights]
+        # Escolher um símbolo vencedor
+        winning_symbol = random.choices(
+            list(possible_payouts[user_credit.level]),
+            weights=normalized_weights,
+            k=1
+        )[0]
 
-    # Escolher resultado final
-    result = random.choices(
-        list(possible_payouts[user_credit.level]),
-        weights=normalized_weights,
-        k=3
-    )
-
-        # 🔄 Ajuste Dinâmico: Se jogador estiver ganhando muito, reduzir chance de vitória
-    if user_credit.credits >= user_credit.max_credits * 0.5:
-        base_weights = [w * 0.2 for w in base_weights]  # Reduz 80% das chances de ganhar
-        result = random.choices(['🍒', '🍋', '🍊','🍇','🔔','⭐','7️⃣'],k=3)
-        print('reduzido em 80')
-
-    if user_credit.credits >= user_credit.max_credits * 0.75:
-        base_weights = [w * 0.05 for w in base_weights]  # Reduz 95% das chances
-        result = random.choices(['🍒', '🍋', '🍊','🍇','🔔','⭐','7️⃣'],k=3)
-        print('reduzido em 95')
+        # Gerar resultados com base no símbolo vencedor
+        result = [winning_symbol] * 3  # Todos os 3 símbolos iguais (vitória)
+    else:  # 8% de chance de perder
+        # Escolher símbolos aleatórios diferentes (derrota)
+        result = random.choices(
+            list(possible_payouts[user_credit.level]),
+            k=3
+        )
 
     return result

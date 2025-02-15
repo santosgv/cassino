@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% load static %}
 
 
@@ -28,7 +29,7 @@
             <tr>
                 <td>{{ withdrawal.id }}</td>
                 <td>{{ withdrawal.affiliate.user.username }} {% if withdrawal.user.username %}{{withdrawal.user.username}}{% endif %}</td>
-                <td>R$ {{ withdrawal.amount }}</td>
+                <td>R$ {{ withdrawal.amount|intcomma }}</td>
                 <td>{% if withdrawal.affiliate %} Sim {% else %} Nao {% endif %}</td>
                 <td>{{ withdrawal.requested_at }}</td>
                 <td>{{ withdrawal.pix_key }}</td>

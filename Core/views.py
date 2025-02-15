@@ -17,10 +17,10 @@ MIN_WITHDRAWAL = 100
 # Lista dos pacotes disponíveis
 PACKAGES = {
     "starter": {"name": "🟢 Starter Pack", "credits": 20, "price": 10.00, "bonus": 0, "color": "success"},
-    "pro": {"name": "🔵 Pro Player", "credits": 100, "price": 50.00, "bonus": 50, "color": "primary"},
-    "high_roller": {"name": "🔴 High Roller", "credits": 200, "price": 100.00, "bonus": 100, "color": "danger"},
-    "vip": {"name": "🔥 VIP Pack", "credits": 500, "price": 250.00, "bonus": 250, "color": "warning"},
-    "super_vip": {"name": " 💎Super VIP", "credits": 1000, "price": 500.00, "bonus": 300, "color": "info"},
+    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 50.00, "bonus": 40, "color": "primary"},
+    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 100.00, "bonus": 80, "color": "danger"},
+    "vip": {"name": "🔥 VIP Pack", "credits": 450, "price": 250.00, "bonus": 150, "color": "warning"},
+    "super_vip": {"name": " 💎Super VIP", "credits": 900, "price": 500.00, "bonus": 200, "color": "info"},
 }
 
 
@@ -30,15 +30,15 @@ def jogo(request):
 
     return render(request, 'slot_machine/index.html', {'credits': user_credit.credits})
 
-#@login_required(login_url='/login/') 
+@login_required(login_url='/login/') 
 def spin(request):
-    #if not request.user.is_authenticated:
-    #    return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
 
-    #user_credit,created = UserCredit.objects.get_or_create(user=request.user)
+    user_credit,created = UserCredit.objects.get_or_create(user=request.user)
 
     # teste
-    user_credit = UserCredit.objects.get(user=1)
+    #user_credit = UserCredit.objects.get(user=1)
 
     # Verificar se o usuário tem créditos suficientes
     if user_credit.credits < 1:
@@ -47,7 +47,7 @@ def spin(request):
     bet_amount = get_bet_amount(user_credit.level)
     
 
-    # Consumir 1 crédito
+    # Consumir  crédito
     user_credit.credits -= bet_amount
     user_credit.save()
 
@@ -71,19 +71,19 @@ def spin(request):
     if len(set(results)) == 1:  # Se todos os símbolos forem iguais
         symbol = results[0]  # Símbolo que foi acertado
         multipliers = {
-            '🍒': 2,
-            '🍋': 5,
-            '🍊': 7,
-            '🍇': 12,
-            '🔔': 20,
-            '⭐': 50,
-            '7️⃣': 200,
+            '🍒': 1.2,
+            '🍋': 1.4,
+            '🍊': 1.6,
+            '🍇': 1.8,
+            '🔔': 2,
+            '⭐': 2,
+            '7️⃣': 2,
         }
         
         multiplier = multipliers.get(symbol, 0) 
-        credits_won = user_credit.credits * multiplier
+        credits_won = bet_amount * multiplier
         user_credit.credits += credits_won  
-        user_credit.update_stats(bet_amount, 1)
+        user_credit.update_stats(1, 1)
 
         
         # Aumentar o nível se ganhou
@@ -93,7 +93,7 @@ def spin(request):
         user_credit.save()
         message = f"Você ganhou x{multiplier}"
     else:
-        user_credit.update_stats(bet_amount, -1)
+        user_credit.update_stats(1, -1)
         message = "Tente novamente!"
 
     return JsonResponse({'results': results, 'message': message, 'credits': user_credit.credits})
