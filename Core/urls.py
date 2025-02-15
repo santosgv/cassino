@@ -9,6 +9,7 @@ urlpatterns = [
     path('spin/', views.spin, name='spin'),
     path('roleta/',views.roleta, name='roleta'),
     path('spin_roulette/',views.spin_roulette, name='spin_roulette'),
+    path('aviator/',views.aviator , name='aviator'),
     path('creditos/',views.creditos, name='creditos'),
     path('convert-credits/', views.convert_credits, name='convert_credits'),
     path('request_pix_withdrawal/',views.request_pix_withdrawal, name='request_pix_withdrawal'),

@@ -103,8 +103,8 @@ def roleta(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'roleta/index.html', {'credits': user_credit.credits})
 
-#@login_required
-@csrf_exempt 
+@login_required
+#@csrf_exempt 
 def spin_roulette(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
@@ -162,6 +162,9 @@ def spin_roulette(request):
         'index': result_index,  # Índice do resultado
         'credits': user_credit.credits
     })
+
+def aviator(request):
+    return render(request, 'aviator/index.html')
 
 @login_required(login_url='/login/') 
 def creditos(request):
@@ -227,7 +230,6 @@ def purchase_credits(request, package_name):
 
     return redirect(payment_link)
 
-
 @csrf_exempt
 def mercado_pago_webhook(request):
     """ Webhook para ouvir notificações de pagamento do Mercado Pago """
@@ -279,7 +281,6 @@ def mercado_pago_webhook(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Método inválido"}, status=405)
-
 
 @login_required(login_url='/login/') 
 def purchase_success(request, package_name):
