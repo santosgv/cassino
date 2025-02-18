@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .models import UserCredit,TransactionHistory
 from accounts.models import Withdrawal
 from django.contrib import messages
-#import mercadopago
+import mercadopago
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -103,7 +103,6 @@ def roleta(request):
     return render(request, 'roleta/index.html', {'credits': user_credit.credits})
 
 @login_required
-#@csrf_exempt 
 def spin_roulette(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
@@ -203,6 +202,20 @@ def purchase_credits(request, package_name):
     package = PACKAGES[package_name]
     mp = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
 
+
+    payment_data = {
+        "transaction_amount": float(package["price"]),  # Valor do pagamento
+        "payment_method_id": "pix",     # Método de pagamento PIX
+        "payer": {
+            "email": request.user.email,  # Email do cliente
+        },
+    }
+
+    payment_response = mp.payment().create(payment_data)
+    payment = payment_response["response"]
+    
+    return render(request,'checkout.html',{'payment':payment})
+
     # Criando a preferência de pagamento
     preference_data = {
         "items": [{
@@ -228,6 +241,8 @@ def purchase_credits(request, package_name):
     print(payment_link)
 
     return redirect(payment_link)
+
+
 
 @csrf_exempt
 def mercado_pago_webhook(request):
