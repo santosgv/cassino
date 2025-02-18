@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .models import UserCredit,TransactionHistory
 from accounts.models import Withdrawal
 from django.contrib import messages
-import mercadopago
+#import mercadopago
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -17,10 +17,9 @@ MIN_WITHDRAWAL = 100
 # Lista dos pacotes disponíveis
 PACKAGES = {
     "starter": {"name": "🟢 Starter Pack", "credits": 20, "price": 10.00, "bonus": 0, "color": "success"},
-    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 50.00, "bonus": 40, "color": "primary"},
-    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 100.00, "bonus": 80, "color": "danger"},
-    "vip": {"name": "🔥 VIP Pack", "credits": 450, "price": 250.00, "bonus": 150, "color": "warning"},
-    "super_vip": {"name": " 💎Super VIP", "credits": 900, "price": 500.00, "bonus": 200, "color": "info"},
+    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary"},
+    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger"},
+    "vip": {"name": "🔥 VIP Pack", "credits": 450, "price": 50.00, "bonus": 150, "color": "warning"},
 }
 
 

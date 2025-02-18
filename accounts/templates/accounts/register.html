@@ -5,6 +5,55 @@
     {% endblock %}
     {% block 'head' %}
     <link rel="stylesheet" href="{% static 'accounts.css' %}" >
+    <style>
+
+        .notification-popup {
+            position: fixed;
+            bottom: 20px;
+            left: -300px; /* Começa fora da tela */
+            background-color: #222;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            animation: slide-in 0.5s ease-out forwards;
+            z-index: 1000;
+            min-width: 250px;
+            max-width: 280px;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .notification-text strong {
+            color: #FFD700;
+        }
+
+        .notification-text span {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        @keyframes slide-in {
+            from {
+                left: -300px;
+            }
+            to {
+                left: 20px;
+            }
+        }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+            
+    </style>
     {% endblock %}
 
     {% block 'body' %}
@@ -19,4 +68,76 @@
         <p>Já tem uma conta? <a href="{% url 'Accounts:login' %}">Faça login</a>.</p>
     </div>
 </body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const names = ["Ana O.",
+  "Pedro S.",
+  "Clara C.",
+  "Lucas P.",
+  "Sofia L.",
+  "Enzo R.",
+  "Mateus C.",
+  "Gabriel S.",
+  "Laura F.",
+  "Matheus R.",
+  "Alice M.",
+  "João C.",
+  "Davi S.",
+  "Maria O.",
+  "Miguel S.",
+  "Heloísa C.",
+  "Lara R.",
+  "Bryan M.",
+  "Esther R.",
+  "Luísa S.",
+  "Daniel C.",
+  "Samuel P.",
+  "Valeria A.",
+  "Nicolas R.",
+  "Caio C.",
+  "Lívia O.",
+  "Heitor S.",
+  "Clara F.",
+  "Isabel S.",
+  "Felipe A.",
+  "Ana P.",
+  "Bruno C.",
+  "Sophia R.",
+  "Isaac M.",
+  "Beatriz R.",
+  "Enzo L.",
+  "Yasmin C.",
+  "Lucas S.",
+  "Isabela C.", ];
+
+    function showNotification() {
+    const name = names[Math.floor(Math.random() * names.length)];
+    const amount = (Math.random() * (500 - 10) + 10).toFixed(2);
+
+    const notification = document.createElement("div");
+    notification.classList.add("notification-popup");
+    notification.innerHTML = `
+    <div class="notification-text">
+        <strong>${name}</strong> acaba de ganhar <span>R$ ${amount} 💰</span>
+    </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+    notification.classList.add("fade-out");
+    setTimeout(() => notification.remove(), 500);
+    }, 4000);
+    }
+
+    function randomNotification() {
+    showNotification();
+    setTimeout(randomNotification, Math.random() * (15000 - 5000) + 5000); // Entre 5s e 15s
+    }
+
+    randomNotification();
+    });
+
+</script>
 {% endblock %}
