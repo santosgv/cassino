@@ -13,12 +13,9 @@ urlpatterns = [
     path('creditos/',views.creditos, name='creditos'),
     path('convert-credits/', views.convert_credits, name='convert_credits'),
     path('request_pix_withdrawal/',views.request_pix_withdrawal, name='request_pix_withdrawal'),
-
     path("purchase/<str:package_name>/", views.purchase_credits, name="purchase_credits"),
-    path("purchase/success/<str:package_name>/", views.purchase_success, name="purchase_success"),
-     path("mercadopago/webhook/", views.mercado_pago_webhook, name="mercado_pago_webhook"),
-    path("purchase/failure/", views.purchase_failure, name="purchase_failure"),
-    path("purchase/pending/", views.purchase_pending, name="purchase_pending")
+    path('livepix_webhook/',views.livepix_webhook, name='livepix_webhook')
+
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

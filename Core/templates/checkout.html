@@ -8,7 +8,6 @@
 
 
         .container {
-            max-width: 600px;
             margin: 0 auto;
             background: #fff;
             padding-top: 120px;
@@ -19,16 +18,8 @@
             text-align: center;
             color: #4CAF50;
         }
-        .qr-code {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .qr-code img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
+
+
         .instructions {
             margin-top: 20px;
             text-align: center;
@@ -48,18 +39,19 @@
 
     {% block 'body' %}
         
-    <div class="container">
+    <div class="container" style='padding-top:120px'>
         <h1>Pagamento via PIX</h1>
         
-        <!-- Exibição do QR Code -->
-        <div class="qr-code">
-            <img alt="Embedded Image" src="data:image/png;base64,{{ payment.point_of_interaction.transaction_data.qr_code_base64 }}" alt="QR Code PIX">
-        </div>
+        <h2>Escaneie o QR Code para pagar</h2>
+        <iframe height='50%' weight='50%' class="text-center" src="{{ qr_code }}"></iframe>
+
+        <p>Use a câmera do seu celular para escanear o QR Code e concluir a transação.</p>
+        <a href="{% url 'creditos' %}" class="btn btn-secondary">Voltar</a>
 
         <!-- Instruções para o pagamento -->
         <div class="instructions">
             <p>
-                Para finalizar o pagamento, abra o aplicativo do seu banco e escaneie o QR Code acima ou copie o código PIX.
+                O pagamento será processado automaticamente pelo LivePix. Ao acessar o LivePix, insira seu Email, valor e mensagem conforme solicitado.
             </p>
             <p>
                 Após o pagamento, o status será atualizado automaticamente.

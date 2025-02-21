@@ -2,26 +2,37 @@ from django.shortcuts import render,redirect
 from django.http import JsonResponse
 import random
 from django.contrib.auth.decorators import login_required
-from .models import UserCredit,TransactionHistory
+from .models import UserCredit
+from django.contrib.auth.models import User
 from accounts.models import Withdrawal
 from django.contrib import messages
-#import mercadopago
+import json
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
 from .utils import  manage_risk,get_bet_amount
 from django.views.decorators.csrf import csrf_exempt
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
 PACKAGES = {
-    "starter": {"name": "🟢 Starter Pack", "credits": 20, "price": 10.00, "bonus": 0, "color": "success"},
-    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary"},
-    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger"},
-    "vip": {"name": "🔥 VIP Pack", "credits": 450, "price": 50.00, "bonus": 150, "color": "warning"},
+    "starter": {"name": "🟢 Starter", "credits": 20, "price": 10.00, "bonus": 0, "color": "success", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
+    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
+    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
+    "vip": {"name": "🔥 VIP", "credits": 450, "price": 100.00, "bonus": 150, "color": "warning", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
 }
 
+CREDIT_PACKAGES = {
+    10.00: 20,
+    20.00: 90,
+    75.00: 180,
+    100.00: 450
+}
 
 @login_required(login_url='/login/')  
 def jogo(request):
@@ -193,148 +204,63 @@ def convert_credits(request):
 
 @login_required(login_url='/login/') 
 def purchase_credits(request, package_name):
-    """ Gera um link de pagamento do Mercado Pago para a compra do pacote de créditos """
-    
     if package_name not in PACKAGES:
         messages.error(request, "Pacote inválido!")
         return redirect("creditos")
 
     package = PACKAGES[package_name]
-    mp = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
 
-
-    payment_data = {
-        "transaction_amount": float(package["price"]),  # Valor do pagamento
-        "payment_method_id": "pix",     # Método de pagamento PIX
-        "payer": {
-            "email": request.user.email,  # Email do cliente
-        },
-    }
-
-    payment_response = mp.payment().create(payment_data)
-    payment = payment_response["response"]
-    
-    return render(request,'checkout.html',{'payment':payment})
-
-    # Criando a preferência de pagamento
-    preference_data = {
-        "items": [{
-            "title": f"{package_name.replace('_', ' ').title()} - {package['credits']} Créditos",
-            "quantity": 1,
-            "currency_id": "BRL",
-            "unit_price": float(package["price"]),
-        }],
-        "payer": {
-            "email": request.user.email,
-        },
-        "back_urls": {
-            "success": request.build_absolute_uri(f"/purchase/success/{package_name}/"),
-            "failure": request.build_absolute_uri("/purchase/failure/"),
-            "pending": request.build_absolute_uri("/purchase/pending/"),
-        },
-        "auto_return": "approved",
-        "notification_url": request.build_absolute_uri("/mercadopago/webhook/"),
-    }
-
-    preference_response = mp.preference().create(preference_data)
-    payment_link = preference_response["response"]["init_point"]
-    print(payment_link)
-
-    return redirect(payment_link)
-
-
+    return render(request, "checkout.html", {
+            "qr_code": package["qr_code"],
+            "package": package,
+        })
 
 @csrf_exempt
-def mercado_pago_webhook(request):
-    """ Webhook para ouvir notificações de pagamento do Mercado Pago """
-    
-    if request.method == "POST":
+def livepix_webhook(request):
+    if request.method == 'POST':
         try:
-            # Obtendo os dados enviados pelo Mercado Pago
-            data = json.loads(request.body)
-            payment_id = data.get("data", {}).get("id")
+            event = json.loads(request.body)
+            logger.debug(f"Payload recebido: {event}")
 
-            if not payment_id:
-                return JsonResponse({"error": "ID de pagamento não encontrado"}, status=400)
+            if event.get('event') == 'new':  # Confirma que é um pagamento recebido
+                payment_data = event.get('resource', {})
+                amount = float(payment_data.get('amount', 0))
+                reference = payment_data.get('reference', '')  # Aqui deve ser o email do usuário
+                
+                logger.debug(f"Pagamento recebido: {amount} | Referência: {reference}")
 
-            # Conectando à API do Mercado Pago
-            mp = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
-            payment_info = mp.payment().get(payment_id)
+                # Valida se o valor pago está nos pacotes disponíveis
+                if amount not in CREDIT_PACKAGES:
+                    logger.warning(f"Valor pago inválido: {amount}")
+                    return JsonResponse({'error': 'Valor de pagamento não reconhecido'}, status=400)
 
-            if "response" not in payment_info or payment_info["response"].get("status") != "approved":
-                return JsonResponse({"error": "Pagamento não aprovado"}, status=400)
+                # Busca o usuário pelo email de referência
+                try:
+                    user = User.objects.get(email=reference)
+                    user_credit, created = UserCredit.objects.get_or_create(user=user)
 
-            # Pegando os detalhes do pagamento
-            payment_data = payment_info["response"]
-            email = payment_data["payer"]["email"]
-            amount_paid = payment_data["transaction_amount"]
+                    # Atualiza os créditos do usuário
+                    credits_to_add = CREDIT_PACKAGES[amount]
+                    user_credit.credits += credits_to_add
+                    user_credit.save()
 
-            # Encontrando o usuário pelo email
-            user = User.objects.filter(email=email).first()
-            if not user:
-                return JsonResponse({"error": "Usuário não encontrado"}, status=400)
+                    logger.info(f"Créditos adicionados: {credits_to_add} para {user.email}")
 
-            # Verificando qual pacote foi comprado
-            purchased_credits = None
-            for package_name, package in PACKAGES.items():
-                if float(package["price"]) == amount_paid:
-                    purchased_credits = package["credits"]
-                    break
+                    return JsonResponse({'status': 'success', 'credits_added': credits_to_add}, status=200)
+                
+                except User.DoesNotExist:
+                    logger.error(f"Usuário não encontrado para o email: {reference}")
+                    return JsonResponse({'error': 'Usuário não encontrado'}, status=404)
 
-            if purchased_credits is None:
-                return JsonResponse({"error": "Pacote não encontrado"}, status=400)
+            else:
+                logger.warning("Evento não suportado recebido no webhook")
+                return JsonResponse({'error': 'Evento não suportado'}, status=400)
 
-            # Atualizando os créditos do usuário
-            user_credit, created = UserCredit.objects.get_or_create(user=user)
-            user_credit.credits += purchased_credits
-            user_credit.save()
+        except json.JSONDecodeError:
+            logger.error("Erro ao decodificar JSON recebido no webhook")
+            return JsonResponse({'error': 'JSON inválido'}, status=400)
 
-            return JsonResponse({"message": "Pagamento processado com sucesso"}, status=200)
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return JsonResponse({"error": "Método inválido"}, status=405)
-
-@login_required(login_url='/login/') 
-def purchase_success(request, package_name):
-    """ Processa a compra bem-sucedida e adiciona os créditos ao usuário """
-
-    if package_name not in PACKAGES:
-        messages.error(request, "Pacote inválido!")
-        return redirect("creditos")
-
-    package = PACKAGES[package_name]
-    user_credit, created = UserCredit.objects.get_or_create(user=request.user)
-
-    # Adicionando os créditos + bônus ao saldo do usuário
-    total_credits = package["credits"] + package["bonus"]
-    user_credit.credits += total_credits
-    user_credit.save()
-
-    # Criando um registro da transação
-    TransactionHistory.objects.create(
-        user=request.user,
-        transaction_type="deposit",
-        amount=Decimal(package["price"]),
-        credits=total_credits,
-        status="Aprovado"
-    )
-
-    messages.success(request, f"Compra bem-sucedida! Você recebeu {total_credits} créditos.")
-    return redirect("creditos")
-
-@login_required(login_url='/login/') 
-def purchase_failure(request):
-    """ Exibe uma mensagem de falha na compra """
-    messages.error(request, "O pagamento não foi aprovado. Tente novamente.")
-    return redirect("creditos")
-
-@login_required(login_url='/login/') 
-def purchase_pending(request):
-    """ Exibe uma mensagem para pagamentos pendentes """
-    messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
-    return redirect("creditos")
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
 
 @login_required
 def request_pix_withdrawal(request):

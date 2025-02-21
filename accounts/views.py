@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from .forms import CustomUserCreationForm 
 from django.contrib import messages
 from .models import Affiliate, Referral, Withdrawal
 from django.contrib.admin.views.decorators import staff_member_required
@@ -30,17 +31,18 @@ def register(request):
         affiliate = get_object_or_404(Affiliate, referral_code=ref_code)
 
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Cria o usuário
-            username = form.cleaned_data.get('username')
+            user = form.save(commit=False)  # Criar o usuário sem salvar no banco ainda
+            user.email = form.cleaned_data['email']  # Atribuir o email ao usuário
+            user.save()  # Agora salvar o usuário
 
             if affiliate:
                 Referral.objects.create(affiliate=affiliate,ip_address=ip_address,referred_user=user)
                 affiliate.total_commission += 10  # Exemplo de comissão fixa
                 affiliate.save()
 
-            messages.success(request, f'Conta criada com sucesso para {username}!')
+            messages.success(request, f'Conta criada com sucesso para {user.username}!')
             return redirect('/')  # Redireciona para a página de login
     else:
         form = UserCreationForm()

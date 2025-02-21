@@ -62,9 +62,22 @@
         <h2>Cadastro</h2>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Cadastrar</button>
+        
+            <label for="id_username">Usuário:</label>
+            <input type="text" name="username" id="id_username" value="{{ form.username.value|default_if_none:'' }}" required>
+        
+            <label for="id_email">Email:</label>
+            <input type="email" name="email" id="id_email" value="{{ form.email.value|default_if_none:'' }}" required>
+        
+            <label for="id_password1">Senha:</label>
+            <input type="password" name="password1" id="id_password1" required>
+        
+            <label for="id_password2">Confirme a senha:</label>
+            <input type="password" name="password2" id="id_password2" required>
+        
+            <button type="submit">Criar Conta</button>
         </form>
+        
         <p>Já tem uma conta? <a href="{% url 'Accounts:login' %}">Faça login</a>.</p>
     </div>
 </body>
