@@ -1,7 +1,11 @@
 from .models import UserCredit
-from decimal import Decimal
+from django.http import HttpResponse
 import random
-
+import qrcode
+import io
+import urllib.parse
+import os
+from django.conf import settings
 
 def get_bet_amount(level):
     return max(1, min(level, 5))
@@ -40,3 +44,22 @@ def manage_risk(user_id, bet_amount, possible_payouts):
         )
 
     return result
+
+
+def gerar_qrcode(chave_pix):
+    """Gera um QR Code a partir da string chave_pix e retorna o caminho do arquivo salvo."""
+
+    # Diretório onde os QR Codes serão salvos
+    qr_dir = os.path.join(settings.MEDIA_ROOT, "qrcodes")
+    os.makedirs(qr_dir, exist_ok=True)  # Garante que o diretório existe
+
+    # Define o caminho do arquivo (usando um nome único baseado na chave PIX)
+    qr_filename = f"qrcode_{hash(chave_pix)}.png"
+    qr_path = os.path.join(qr_dir, qr_filename)
+
+    # Gera o QR Code e salva no caminho definido
+    qr = qrcode.make(chave_pix)
+    qr.save(qr_path, format="PNG")
+
+    # Retorna o caminho relativo ao MEDIA_URL para ser usado no template
+    return f"/media/qrcodes/{qr_filename}"

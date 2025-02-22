@@ -5,21 +5,27 @@
     {% endblock %}</title>
     {% block 'head' %}
     <style>
-
-
         .container {
             margin: 0 auto;
             background: #fff;
-            padding-top: 120px;
-            border-radius: 8px;
+            padding: 20px;
+            padding-top:150px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
             color: #4CAF50;
         }
-
-
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-code img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
         .instructions {
             margin-top: 20px;
             text-align: center;
@@ -27,6 +33,32 @@
         .instructions p {
             font-size: 16px;
             line-height: 1.6;
+        }
+        .copy-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .copy-section input {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .copy-section button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .copy-section button:hover {
+            background-color: #45a049;
         }
         .footer {
             margin-top: 30px;
@@ -38,30 +70,47 @@
     {% endblock %}
 
     {% block 'body' %}
+    <div class="container">
+        <h1>Pagamento via PIX - {{ package.name }}</h1>
         
-    <div class="container" style='padding-top:120px'>
-        <h1>Pagamento via PIX</h1>
-        
-        <h2>Escaneie o QR Code para pagar</h2>
-        <iframe height='50%' weight='50%' class="text-center" src="{{ qr_code }}"></iframe>
-
-        <p>Use a câmera do seu celular para escanear o QR Code e concluir a transação.</p>
-        <a href="{% url 'creditos' %}" class="btn btn-secondary">Voltar</a>
+        <!-- Exibição do QR Code -->
+        <div class="qr-code">
+            <img src="{{ qr_code }}" alt="QR Code PIX">
+        </div>
 
         <!-- Instruções para o pagamento -->
         <div class="instructions">
             <p>
-                O pagamento será processado automaticamente pelo LivePix. Ao acessar o LivePix, insira seu Email, valor e mensagem conforme solicitado.
-            </p>
-            <p>
-                Após o pagamento, o status será atualizado automaticamente.
+                Para finalizar o pagamento, abra o aplicativo do seu banco e escaneie o QR Code acima ou copie o código PIX abaixo.
             </p>
         </div>
-        
-        <!-- Informações adicionais -->
+
+        <!-- Seção para copiar a chave PIX -->
+        <div class="copy-section">
+            <input type="text" id="pix-key" value="{{ package.qr_code }}" readonly>
+            <button onclick="copiarChavePix()">Copiar</button>
+        </div>
+
+        <!-- Rodapé -->
         <div class="footer">
             <p>Se tiver alguma dúvida, entre em contato conosco.</p>
-            <p>Email: suporte@seusite.com | Telefone: (11) 1234-5678</p>
+            <p>Email: suporte@luckybet.com | Telefone: (11) 1234-5678</p>
         </div>
     </div>
+
+
+    <script>
+        function copiarChavePix() {
+            // Seleciona o input
+            const input = document.getElementById('pix-key');
+            input.select(); // Seleciona o texto do input
+            input.setSelectionRange(0, 99999); // Para dispositivos móveis
+
+            // Copia o texto para a área de transferência
+            document.execCommand('copy');
+
+            // Alerta o usuário que o texto foi copiado
+            alert('Chave PIX copiada para a área de transferência!');
+        }
+    </script>
     {% endblock %}

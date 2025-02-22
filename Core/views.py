@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from django.http import JsonResponse
 import random
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from .models import UserCredit
 from django.contrib.auth.models import User
 from accounts.models import Withdrawal
@@ -10,8 +11,9 @@ import json
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
-from .utils import  manage_risk,get_bet_amount
+from .utils import  manage_risk,get_bet_amount,gerar_qrcode
 from django.views.decorators.csrf import csrf_exempt
+
 
 import logging
 
@@ -21,10 +23,10 @@ MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
 PACKAGES = {
-    "starter": {"name": "🟢 Starter", "credits": 20, "price": 10.00, "bonus": 0, "color": "success", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
-    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
-    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
-    "vip": {"name": "🔥 VIP", "credits": 450, "price": 100.00, "bonus": 150, "color": "warning", "qr_code": "https://widget.livepix.gg/embed/2c16a36e-456d-4eef-add8-5a1e15bc3e6b"},
+    "starter": {"name": "🟢 Starter", "credits": 20, "price": 10.00, "bonus": 0, "color": "success", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b520400005303986540510.005802BR5907LIVEPIX6009SAO PAULO6228052467b9fbfc42b640c5100daf0563047B46"},
+    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b520400005303986540520.005802BR5907LIVEPIX6009SAO PAULO6228052467b9eb50bb22c246c60fc50d63045EA3"},
+    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b520400005303986540575.005802BR5907LIVEPIX6009SAO PAULO6228052467b9fafdff9fe5429d0f002a6304DC02"},
+    "vip": {"name": "🔥 VIP", "credits": 450, "price": 100.00, "bonus": 150, "color": "warning", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b5204000053039865406100.005802BR5907LIVEPIX6009SAO PAULO6228052467b9fb4e449826beb7019c2563040DDA"},
 }
 
 CREDIT_PACKAGES = {
@@ -210,8 +212,12 @@ def purchase_credits(request, package_name):
 
     package = PACKAGES[package_name]
 
+    qrcode = gerar_qrcode(package["qr_code"])
+
+    print(qrcode)
+
     return render(request, "checkout.html", {
-            "qr_code": package["qr_code"],
+            "qr_code": qrcode,
             "package": package,
         })
 
