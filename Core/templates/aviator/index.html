@@ -274,7 +274,7 @@
                 <div id="header">
                     <div id="last-counters"></div>
                     <div>
-                        <div id="balance">Créditos: </div>
+                        <div id="balance">R$: </div>
                         <div id="balance-amount">
                             <div style="position: absolute; top: 5px; right: 10px; font-size: 19px; color: #ffffff;"></div>
                         </div>
@@ -327,7 +327,7 @@
             let counter = 1.0;
             let multiplier = 0;
             let counterDepo = [];
-            let randomStop = Math.random() * (10 - 0.1) + 0.8;
+            let randomStop = 1.0;
             let cashedOut = false; // flag to indicate if the user has cashed out
             let placedBet = false;
             let isFlying = true;
@@ -341,7 +341,7 @@
             
             
             let balanceAmount = document.getElementById('balance-amount');
-            let calculatedBalanceAmount = {{ user.usercredit.credits }};
+            let calculatedBalanceAmount = parseFloat("{{ user.usercredit.balance|intcomma }}");
             balanceAmount.textContent = calculatedBalanceAmount.toString();
             let betButton = document.getElementById('bet-button');
             betButton.textContent = 'Bet';
@@ -350,6 +350,132 @@
             let lastCounters = document.getElementById('last-counters');
             let counterItem = lastCounters.getElementsByTagName('p');
             let classNameForCounter = '';
+
+            function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function loseBet(betAmount) {
+        try {
+            const response = await fetch('/lose_bet/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    bet_amount: betAmount
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                console.log('Credits updated in backend:', data.new_balance); // Log para depuração
+                return data.new_balance; // Retorna o novo saldo
+            } else {
+                throw new Error(data.error || 'Failed to update credits');
+            }
+
+        } catch (error) {
+            console.error('Error updating credits:', error);
+            return null;
+        }
+    }
+
+
+            async function updateCreditsInBackend(winnings) {
+            try {
+                const response = await fetch('/update_credits/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')  // Adicione o token CSRF para segurança
+                    },
+                    body: JSON.stringify({
+                        winnings: winnings
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Credits updated in backend:', data.new_balance);
+                    return data.new_balance; // Retorna o novo saldo
+                } else {
+                    throw new Error(data.error || 'Failed to update credits');
+                }
+
+            } catch (error) {
+                console.error('Error updating credits:', error);
+                return null;
+            }
+        }
+
+
+            async function fetchMultiplier() {
+            try {
+                const response = await fetch('/get_multiplier/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log('Multiplier received:', data.multiplier); // Log para depuração
+                return data.multiplier;
+
+            } catch (error) {
+                console.error('Error fetching multiplier:', error);
+                return 1.0; // Retorna um valor padrão em caso de erro
+            }
+        }
+
+        // Função para iniciar o jogo com o multiplicador do backend
+        async function startGame() {
+            randomStop = await fetchMultiplier(); // Atualiza randomStop com o valor do backend
+            draw(); // Inicia a animação
+        }
+
+        // Inicia o jogo quando a página carrega
+        startGame();
+
+
+        async function handleLostBet() {
+            const newBalance = await loseBet(inputBox.value); // Chama a função assíncrona e define newBalance
+
+            if (newBalance !== null) {
+                calculatedBalanceAmount = newBalance; // Atualiza o saldo no frontend
+                balanceAmount.textContent = calculatedBalanceAmount.toFixed(2); // Exibe o saldo com 2 casas decimais
+            }
+
+            messageField.textContent = 'You lost your bet!'; // Mensagem de perda
+            placedBet = false; // Reseta a flag de aposta
+            betButton.textContent = 'Bet'; // Atualiza o texto do botão
+        }
+
             
             
             function updateCounterDepo() {
@@ -387,18 +513,18 @@
             messageField.textContent = 'Wait for the next round';
             
             
-            //Animation
+                //Animation
             function draw() {
                 //Counter
                 counter += 0.001;
                 document.getElementById('counter').textContent = counter.toFixed(2) + 'x';
-            
+
                 // Clear the canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
                 // Call the function to update the counter item initially
                 updateCounterDepo();
-            
+
                 x += speedX;
                 // Calculate the new position of the dot
                 if (counter < randomStop) {
@@ -410,22 +536,25 @@
                     y = 0;
                     isFlying = false;
                 }
-            
+
                 // Check if it's time to stop the animation
                 if (counter >= randomStop) {
-            
                     messageField.textContent = 'Place your bet';
-            
+
                     // Stop the animation
                     cancelAnimationFrame(animationId);
-            
+
+                    // Verifica se o usuário não fez cash out
+                    if (placedBet && !cashedOut) {
+                        handleLostBet(); // Chama a função assíncrona para tratar a perda da aposta
+                    }
+
                     counterDepo.unshift(counter.toFixed(2));
-            
+
                     // Wait for 8 seconds and then start a new animation
-                    setTimeout(() => {
-            
+                    setTimeout(async () => {
                         // Generate a new randomStop value and reset the counter to 1
-                        randomStop = Math.random() * (10 - 0.1) + 0.8;
+                        randomStop = await fetchMultiplier();
                         counter = 1.0;
                         x = canvas.width / 2;
                         y = canvas.height / 2;
@@ -433,33 +562,32 @@
                         cashedOut = false;
                         isFlying = true;
                         messageField.textContent = '';
-            
+
                         if (!placedBet && cashedOut) {
                             betButton.textContent = 'Bet';
                         }
-            
+
                         // Start the animation again
                         animationId = requestAnimationFrame(draw);
-            
+
                     }, 8000);
-            
+
                     return;
                 }
-            
+
                 // Push the dot's current coordinates into the dotPath array
                 dotPath.push({ x: x, y: y });
-            
+
                 // Calculate the translation value for the canvas
                 const canvasOffsetX = canvas.width / 2 - x;
                 const canvasOffsetY = canvas.height / 2 - y;
-            
+
                 // Save the current transformation matrix
                 ctx.save();
-            
+
                 // Translate the canvas based on the dot's position
                 ctx.translate(canvasOffsetX, canvasOffsetY);
-            
-            
+
                 // Draw the dot's path
                 for (let i = 1; i < dotPath.length; i++) {
                     ctx.beginPath();
@@ -468,20 +596,20 @@
                     ctx.lineTo(dotPath[i].x, dotPath[i].y);
                     ctx.stroke();
                 }
-            
+
                 // Draw the dot
                 ctx.beginPath();
                 ctx.fillStyle = '#dc3545';
                 ctx.lineWidth = 5;
                 ctx.arc(x, y, 1, 0, 2 * Math.PI);
                 ctx.fill();
-            
+
                 // Draw the image on top of the dot
                 ctx.drawImage(image, x - 28, y - 78, 185, 85);
-            
+
                 // Restore the transformation matrix to its original state
                 ctx.restore();
-            
+
                 // Request the next frame of the animation
                 animationId = requestAnimationFrame(draw);
             }
@@ -531,30 +659,35 @@
                 }
             }
             
-            // Function to cash out bet
-            function cashOut() {
-            
-                if (cashedOut || (inputBox.value === 0)) {
-                    // user has already cashed out or has not placed a bet
-                    messageField.textContent = 'Wait for the next round';
-                    return;
-                }
-            
+            async function cashOut() {
+            if (cashedOut || (inputBox.value === 0)) {
+                messageField.textContent = 'Wait for the next round';
+                return;
+            }
+
                 if ((counter < randomStop)) {
-                    const winnings = inputBox.value * counter; // Calculate winnings based on counter
-                    calculatedBalanceAmount += winnings; // Add winnings to balance
-                    balanceAmount.textContent = calculatedBalanceAmount.toFixed(1).toString();
-            
-                    cashedOut = true; // set flag to indicate user has cashed out
-                    placedBet = false;
-                    betButton.textContent = 'Bet';
-                    messageField.textContent = `Bet cashed out: ${winnings.toFixed(1)}`;
+                    const winnings = inputBox.value * counter; // Calcula os ganhos com base no contador
+                    const roundedWinnings = parseFloat(winnings.toFixed(2)); // Arredonda para 2 casas decimais
+                    const newBalance = await updateCreditsInBackend(roundedWinnings); // Atualiza os créditos no backend
+
+                    // Verifica se newBalance é um número válido
+                    if (typeof newBalance === 'number' && !isNaN(newBalance)) {
+                        calculatedBalanceAmount = newBalance; // Atualiza o saldo no frontend
+                        balanceAmount.textContent = calculatedBalanceAmount.toFixed(2); // Exibe o saldo com 2 casas decimais
+
+                        cashedOut = true; // Define a flag para indicar que o usuário fez cashout
+                        placedBet = false;
+                        betButton.textContent = 'Bet';
+                        messageField.textContent = `Bet cashed out: ${roundedWinnings.toFixed(2)}`;
+                    } else {
+                        console.error("Invalid newBalance value:", newBalance); // Log para depuração
+                        messageField.textContent = 'Failed to update credits. Try again.';
+                    }
                 } else {
                     messageField.textContent = "Can't cash out now";
                 }
             }
-            
-            
+                                
             </script>
         {% endblock %}
     

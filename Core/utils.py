@@ -1,11 +1,13 @@
 from .models import UserCredit
-from django.http import HttpResponse
 import random
 import qrcode
-import io
-import urllib.parse
 import os
 from django.conf import settings
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+import json
+from decimal import Decimal
 
 def get_bet_amount(level):
     return max(1, min(level, 5))
@@ -63,3 +65,75 @@ def gerar_qrcode(chave_pix):
 
     # Retorna o caminho relativo ao MEDIA_URL para ser usado no template
     return f"/media/qrcodes/{qr_filename}"
+
+
+
+def generate_multiplier():
+    import random
+    return round(random.uniform(1.0, 2.5), 2)
+
+@csrf_exempt
+@login_required
+def get_multiplier(request):
+    if request.method == 'GET':
+        multiplier = generate_multiplier()  # Função que gera o multiplicador
+
+        return JsonResponse({
+            'multiplier': multiplier,
+        })
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@csrf_exempt
+@login_required
+def lose_bet(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            bet_amount = Decimal(data.get('bet_amount', 0)).quantize(Decimal('0.00'))  # Converte para Decimal com 2 casas decimais
+
+            # Obtém o saldo atual do usuário
+            user_credit = UserCredit.objects.get(user=request.user)
+
+            # Subtrai o valor apostado do saldo
+            user_credit.balance -= bet_amount
+            user_credit.save()
+
+            return JsonResponse({
+                'success': True,
+                'new_balance': float(user_credit.balance)  # Converte para float
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@csrf_exempt
+@login_required
+def update_credits(request):
+    if request.method == 'POST':
+        try:
+            # Obtém o valor ganho a partir do corpo da requisição
+            data = json.loads(request.body)
+            winnings = Decimal(data.get('winnings', 0)).quantize(Decimal('0.00'))
+
+            # Obtém o saldo atual do usuário
+            user_credit = UserCredit.objects.get(user=request.user)
+
+            # Atualiza o saldo do usuário
+            user_credit.balance += winnings
+            user_credit.save()
+
+            return JsonResponse({
+                'success': True,
+                'new_balance': float(user_credit.balance)
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
