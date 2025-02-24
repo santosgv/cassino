@@ -7,4 +7,6 @@ from .models import UserCredit
 def create_user_credit(sender, instance, created, **kwargs):
     """Cria um registro na UserCredit para cada novo usuário."""
     if created:
-        UserCredit.objects.create(user=instance)
+        UserCredit.objects.create(user=instance,credits=10,max_credits=250)
+
+
