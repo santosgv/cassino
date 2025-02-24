@@ -93,7 +93,7 @@ def spin(request):
         }
         
         multiplier = multipliers.get(symbol, 0) 
-        credits_won = bet_amount * multiplier
+        credits_won = user_credit.credits * multiplier
         user_credit.credits += credits_won  
         user_credit.update_stats(1, 1)
 
