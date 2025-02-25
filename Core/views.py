@@ -76,9 +76,6 @@ def spin(request):
     )
 
 
-    print(results)
-    print(bet_amount)
-
     # Verificar se há um ganhador e aplicar o multiplicador
     if len(set(results)) == 1:  # Se todos os símbolos forem iguais
         symbol = results[0]  # Símbolo que foi acertado
@@ -128,7 +125,6 @@ def spin_roulette(request):
     if user_credit.credits < 1:
         return JsonResponse({'error': 'Créditos insuficientes.'}, status=400)
 
-    # Aplicar margem de lucro do cassino (10%)
     bet_amount = 5
 
 
@@ -165,7 +161,6 @@ def spin_roulette(request):
     user_credit.update_stats(bet_amount, user_credit.credits)
     user_credit.save()
 
-    print(result_index,result['label'])
 
     # Retornar o resultado e o índice
     return JsonResponse({
@@ -213,8 +208,6 @@ def purchase_credits(request, package_name):
     package = PACKAGES[package_name]
 
     qrcode = gerar_qrcode(package["qr_code"])
-
-    print(qrcode)
 
     return render(request, "checkout.html", {
             "qr_code": qrcode,
