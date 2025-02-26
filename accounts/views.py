@@ -169,9 +169,13 @@ def check_unread_alerts(request):
 
 @login_required
 def user_alerts(request):
-    alerts = Alert.objects.filter(user=request.user).order_by('-created_at')
-    unread_count = alerts.filter(is_read=False).count()
-    return render(request, 'accounts/alerts.html', {'alerts': alerts, 'unread_count': unread_count})
+    alerts_list = Alert.objects.filter(user=request.user).order_by('-created_at')
+    
+    pagina = Paginator(alerts_list, 8)
+    page = request.GET.get('page')
+    alerts= pagina.get_page(page)
+
+    return render(request, 'accounts/alerts.html', {'alerts': alerts, })
 
 @login_required
 def mark_alert_as_read(request, alert_id):
