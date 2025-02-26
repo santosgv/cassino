@@ -134,8 +134,7 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MERCADO_PAGO_ACCESS_TOKEN=config('MERCADO_PAGO_ACCESS_TOKEN')
-LIVEPIX_ACCESS_TOKEN=config('LIVEPIX_ACCESS_TOKEN')
-ID_LIVEPIX=config('ID_LIVEPIX')
+
 
 MESSAGE_TAGS = {
     constants.DEBUG: 'alert-primary',

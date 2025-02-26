@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+from django.utils import timezone
 
 class Affiliate(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -52,3 +53,15 @@ class Withdrawal(models.Model):
     class Meta:
         verbose_name_plural = "Saques"
 
+class Alert(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuário")
+    message = models.TextField(verbose_name="Mensagem")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Data de Criação")
+    is_read = models.BooleanField(default=False, verbose_name="Lido")
+
+    def __str__(self):
+        return f"Alerta para {self.user.username}: {self.message[:50]}..."
+
+    class Meta:
+        verbose_name = "Alerta"
+        verbose_name_plural = "Alertas"

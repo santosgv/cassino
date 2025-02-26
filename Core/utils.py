@@ -47,7 +47,6 @@ def manage_risk(user_id, bet_amount, possible_payouts):
 
     return result
 
-
 def gerar_qrcode(chave_pix):
     """Gera um QR Code a partir da string chave_pix e retorna o caminho do arquivo salvo."""
 
@@ -67,7 +66,6 @@ def gerar_qrcode(chave_pix):
     return f"/media/qrcodes/{qr_filename}"
 
 
-
 def generate_multiplier():
     import random
     return round(random.uniform(1.0, 2.5), 2)
@@ -82,7 +80,6 @@ def get_multiplier(request):
             'multiplier': multiplier,
         })
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
 
 @csrf_exempt
 @login_required
@@ -109,7 +106,6 @@ def lose_bet(request):
                 'error': str(e)
             }, status=400)
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
 
 @csrf_exempt
 @login_required

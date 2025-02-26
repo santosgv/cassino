@@ -7,11 +7,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .forms import CustomUserCreationForm 
 from django.contrib import messages
-from .models import Affiliate, Referral, Withdrawal
+from .models import Affiliate, Referral, Withdrawal,Alert
 from django.contrib.admin.views.decorators import staff_member_required
 from decimal import Decimal
 from Core.models import UserCredit
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 
 
 
@@ -159,3 +160,22 @@ def deny_withdrawal(request, withdrawal_id):
         messages.error(request, "Este saque já foi processado.")
 
     return redirect("/manage_withdrawals")
+
+@login_required
+def check_unread_alerts(request):
+    unread_count = Alert.objects.filter(user=request.user, is_read=False).count()
+    return render(request, 'accounts/partials/notification_count.html', {'unread_count': unread_count})
+
+
+@login_required
+def user_alerts(request):
+    alerts = Alert.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = alerts.filter(is_read=False).count()
+    return render(request, 'accounts/alerts.html', {'alerts': alerts, 'unread_count': unread_count})
+
+@login_required
+def mark_alert_as_read(request, alert_id):
+    alert = get_object_or_404(Alert, id=alert_id, user=request.user)
+    alert.is_read = True
+    alert.save()
+    return redirect('Accounts:user_alerts')

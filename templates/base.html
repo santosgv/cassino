@@ -34,6 +34,7 @@
         <meta name="robots" content="index, follow">
         <meta name="googlebot" content="index, follow">
         <meta name="generator" content="Django">
+        <script src="https://unpkg.com/htmx.org@1.9.0"></script>
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -90,6 +91,7 @@
 </head>
     <ul class="navbar nav justify-content-center">
         {% if user.is_authenticated %}
+        <div id="notification-container" hx-get="{% url 'Accounts:check_unread_alerts' %}" hx-trigger="every 10s"><a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/> {% include 'accounts/partials/notification_count.html' %}</a></div> 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'Accounts:home' %}" >Pagina Principal</a>
           </li>
