@@ -13,7 +13,7 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from .utils import  manage_risk,get_bet_amount,gerar_qrcode
 from django.views.decorators.csrf import csrf_exempt
-import mercadopago
+#import mercadopago
 
 import logging
 

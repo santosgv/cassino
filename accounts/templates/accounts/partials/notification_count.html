@@ -1,3 +1,3 @@
 {% if unread_count > 0 %}
-<a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/><span class="badge bg-danger">{{ unread_count }}</span></a>
+<a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/> Mensagens <span class="badge bg-danger">{{ unread_count }}</span></a>
 {% endif %}

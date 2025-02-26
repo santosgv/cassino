@@ -91,7 +91,6 @@
 </head>
     <ul class="navbar nav justify-content-center">
         {% if user.is_authenticated %}
-        <div id="notification-container" hx-get="{% url 'Accounts:check_unread_alerts' %}" hx-trigger="every 10s"><a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/> {% include 'accounts/partials/notification_count.html' %}</a></div> 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'Accounts:home' %}" >Pagina Principal</a>
           </li>
@@ -108,6 +107,7 @@
               <a class="nav-link" style="color: #002bff;" href="{% url 'aviator' %}"><img width="30" height="30" src="https://img.icons8.com/emoji/48/airplane-emoji.png" alt="airplane-emoji"/> Aviao</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/currency-exchange-emoji.png" alt="currency-exchange-emoji"/> Converter</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'request_pix_withdrawal' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
+              <div id="notification-container" hx-get="{% url 'Accounts:check_unread_alerts' %}" hx-trigger="every 600s"><a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/> Mensagens{% include 'accounts/partials/notification_count.html' %}</a></div> 
               {% if user.usercredit.is_affiliate %}
               <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:request_withdrawal' %}"><img width="30" height="30" src="https://img.icons8.com/external-flaticons-flat-flat-icons/64/external-affiliate-live-streaming-flaticons-flat-flat-icons-2.png" alt="external-affiliate-live-streaming-flaticons-flat-flat-icons-2"/> Afiliados</a>
               {%endif%}
