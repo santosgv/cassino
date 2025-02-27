@@ -1,6 +1,5 @@
 from datetime import timezone
 from django.utils import timezone
-from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -12,11 +11,11 @@ from django.contrib.admin.views.decorators import staff_member_required
 from decimal import Decimal
 from Core.models import UserCredit
 from django.core.paginator import Paginator
-from django.http import JsonResponse
 
 
 
-MIN_WITHDRAWAL = 10  # Valor mínimo para saque
+
+MIN_WITHDRAWAL = 100  # Valor mínimo para saque
 WITHDRAWAL_FEE = 0.05  # Taxa de 5%
 
 

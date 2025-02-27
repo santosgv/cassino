@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 import json
 from decimal import Decimal
+import datetime 
 
 def get_bet_amount(level):
     return max(1, min(level, 5))
@@ -67,8 +68,14 @@ def gerar_qrcode(chave_pix):
 
 
 def generate_multiplier():
-    import random
-    return round(random.uniform(1.0, 2.5), 2)
+    now = datetime.datetime.now()
+    current_hour = now.hour
+
+    # Das 23 às 24h, o intervalo é de 1.0 a 10.0
+    if 23 <= current_hour < 24:
+        return round(random.uniform(1.0, 10.0), 2)
+    else:
+        return round(random.uniform(1.0, 2.5), 2)
 
 @csrf_exempt
 @login_required

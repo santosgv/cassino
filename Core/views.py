@@ -2,7 +2,6 @@ from django.shortcuts import render,redirect
 from django.http import JsonResponse
 import random
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 from .models import UserCredit,TransactionHistory
 from django.contrib.auth.models import User
 from accounts.models import Withdrawal
@@ -11,8 +10,8 @@ import json
 from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
-from .utils import  manage_risk,get_bet_amount,gerar_qrcode
-from django.views.decorators.csrf import csrf_exempt
+from .utils import  manage_risk,get_bet_amount
+
 #import mercadopago
 
 import logging
@@ -36,13 +35,13 @@ CREDIT_PACKAGES = {
     100.00: 450
 }
 
-@login_required(login_url='/login/')  
+@login_required 
 def jogo(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
 
     return render(request, 'slot_machine/index.html', {'credits': user_credit.credits})
 
-@login_required(login_url='/login/') 
+@login_required 
 def spin(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
@@ -107,7 +106,7 @@ def spin(request):
 
     return JsonResponse({'results': results, 'message': message, 'credits': user_credit.credits})
 
-@login_required(login_url='/login/')  
+@login_required  
 def roleta(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'roleta/index.html', {'credits': user_credit.credits})
@@ -169,17 +168,18 @@ def spin_roulette(request):
         'credits': user_credit.credits
     })
 
+@login_required
 def aviator(request):
     return render(request, 'aviator/index.html')
 
-@login_required(login_url='/login/') 
+@login_required
 def creditos(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'vendas.html',{'credits': user_credit.credits,
                                             "packages": PACKAGES,
                                             })
 
-@login_required(login_url='/login/') 
+@login_required 
 def convert_credits(request):
     if not request.user.is_authenticated:
         messages.error(request,'Usuário não autenticado.')
@@ -306,8 +306,7 @@ def convert_credits(request):
 
     return JsonResponse({"error": "Método inválido"}, status=405)
 
-
-@login_required(login_url='/login/') 
+@login_required
 def purchase_success(request, package_name):
     """ Processa a compra bem-sucedida e adiciona os créditos ao usuário """
 
@@ -335,18 +334,17 @@ def purchase_success(request, package_name):
     messages.success(request, f"Compra bem-sucedida! Você recebeu {total_credits} créditos.")
     return redirect("creditos")
 
-@login_required(login_url='/login/') 
+@login_required
 def purchase_failure(request):
     """ Exibe uma mensagem de falha na compra """
     messages.error(request, "O pagamento não foi aprovado. Tente novamente.")
     return redirect("creditos")
 
-@login_required(login_url='/login/') 
+@login_required
 def purchase_pending(request):
     """ Exibe uma mensagem para pagamentos pendentes """
     messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
     return redirect("creditos")
-
 
 @login_required
 def request_pix_withdrawal(request):

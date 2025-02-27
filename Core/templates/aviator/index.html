@@ -133,7 +133,7 @@
         
         #mid-wrapper {
             position: relative;
-            width: 100%;
+            width: auto;
             display: flex;
             flex-direction: column;
             margin: 20px 20px 0 20px;
@@ -493,7 +493,7 @@
                 }
 
                 const data = await response.json();
-                console.log('Multiplier received:', data.multiplier); // Log para depuração
+               
                 return data.multiplier;
 
             } catch (error) {
