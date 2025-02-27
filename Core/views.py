@@ -23,10 +23,10 @@ MIN_WITHDRAWAL = 100
 
 # Lista dos pacotes disponíveis
 PACKAGES = {
-    "starter": {"name": "🟢 Starter", "credits": 20, "price": 10.00, "bonus": 0, "color": "success", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b520400005303986540510.005802BR5907LIVEPIX6009SAO PAULO6228052467b9fbfc42b640c5100daf0563047B46"},
-    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b520400005303986540520.005802BR5907LIVEPIX6009SAO PAULO6228052467b9eb50bb22c246c60fc50d63045EA3"},
-    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b520400005303986540575.005802BR5907LIVEPIX6009SAO PAULO6228052467b9fafdff9fe5429d0f002a6304DC02"},
-    "vip": {"name": "🔥 VIP", "credits": 450, "price": 100.00, "bonus": 150, "color": "warning", "qr_code": "00020101021126580014br.gov.bcb.pix01362fc8fd02-fa45-4ff3-80a4-1c2f3439231b5204000053039865406100.005802BR5907LIVEPIX6009SAO PAULO6228052467b9fb4e449826beb7019c2563040DDA"},
+    "starter": {"name": "🟢 Starter", "credits": 20, "price": 10.00, "bonus": 0, "color": "success", "qr_code": "https://app.monetizze.com.br/checkout/KNX416813"},
+    "pro": {"name": "🔵 Pro Player", "credits": 90, "price": 20.00, "bonus": 40, "color": "primary", "qr_code": "https://app.monetizze.com.br/checkout/DKY334250"},
+    "high_roller": {"name": "🔴 High Roller", "credits": 180, "price": 75.00, "bonus": 80, "color": "danger", "qr_code": "https://app.monetizze.com.br/checkout/KPR416869"},
+    "vip": {"name": "🔥 VIP", "credits": 450, "price": 100.00, "bonus": 150, "color": "warning", "qr_code": "https://app.monetizze.com.br/checkout/DLT334255"},
 }
 
 CREDIT_PACKAGES = {
@@ -176,7 +176,8 @@ def aviator(request):
 def creditos(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'vendas.html',{'credits': user_credit.credits,
-                                            "packages": PACKAGES})
+                                            "packages": PACKAGES,
+                                            })
 
 @login_required(login_url='/login/') 
 def convert_credits(request):
@@ -199,23 +200,24 @@ def convert_credits(request):
 
     return redirect('/creditos/')
 
-@login_required(login_url='/login/') 
-def purchase_credits(request, package_name):
+#@login_required(login_url='/login/') 
+#def purchase_credits(request, package_name):
     if package_name not in PACKAGES:
         messages.error(request, "Pacote inválido!")
         return redirect("creditos")
 
     package = PACKAGES[package_name]
 
-    qrcode = gerar_qrcode(package["qr_code"])
+    qrcode = (package["qr_code"])
+    print(qrcode)
 
     return render(request, "checkout.html", {
             "qr_code": qrcode,
             "package": package,
         })
 
-@login_required(login_url='/login/') 
-def purchase_credits(request, package_name):
+#@login_required(login_url='/login/') 
+#def purchase_credits(request, package_name):
     """ Gera um link de pagamento do Mercado Pago para a compra do pacote de créditos """
     
     if package_name not in PACKAGES:
@@ -252,8 +254,8 @@ def purchase_credits(request, package_name):
     return redirect(payment_link)
 
 
-@csrf_exempt
-def mercado_pago_webhook(request):
+#@csrf_exempt
+#def mercado_pago_webhook(request):
     """ Webhook para ouvir notificações de pagamento do Mercado Pago """
     
     if request.method == "POST":
