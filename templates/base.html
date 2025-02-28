@@ -107,7 +107,7 @@
               <a class="nav-link" style="color: #002bff;" href="{% url 'aviator' %}"><img width="30" height="30" src="https://img.icons8.com/emoji/48/airplane-emoji.png" alt="airplane-emoji"/> Aviao</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'convert_credits' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/currency-exchange-emoji.png" alt="currency-exchange-emoji"/> Converter</a>
               <a class="nav-link" style="color: #002bff;" href="{% url 'request_pix_withdrawal' %}" ><img width="30" height="30" src="https://img.icons8.com/emoji/48/money-mouth-face.png" alt="money-mouth-face"/> Sacar</a>
-              <div id="notification-container" hx-get="{% url 'Accounts:check_unread_alerts' %}" hx-trigger="every 600s"><a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/> Mensagens{% include 'accounts/partials/notification_count.html' %}</a></div> 
+              <div id="notification-container" hx-get="{% url 'Accounts:check_unread_alerts' %}" hx-trigger="every 60s"><a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:user_alerts' %}" ><img width="30" height="30" src="https://img.icons8.com/color/48/alarm.png" alt="alarm"/> Mensagens{% include 'accounts/partials/notification_count.html' %}</a></div> 
               {% if user.usercredit.is_affiliate %}
               <a class="nav-link" style="color: #002bff;" href="{% url 'Accounts:request_withdrawal' %}"><img width="30" height="30" src="https://img.icons8.com/external-flaticons-flat-flat-icons/64/external-affiliate-live-streaming-flaticons-flat-flat-icons-2.png" alt="external-affiliate-live-streaming-flaticons-flat-flat-icons-2"/> Afiliados</a>
               {%endif%}
@@ -149,6 +149,9 @@
     {% block 'body' %}
         
     {% endblock %}
+    <footer style="padding-top: 25px;">
+
+    </footer>
     </body>
     <style>
         /* Estilo do botão */
@@ -198,8 +201,7 @@
         }
     </style>
 
-
-  <!-- desativar o inspecionar elemento -->
+      <!-- desativar o inspecionar elemento -->
   <script id="wpcp_disable_Right_Click" type="text/javascript">
     document.ondragstart = function() { return false;}
         function nocontext(e) {
@@ -232,3 +234,4 @@
         e.setAttribute('unselectable',on);
     }
     </script>
+
