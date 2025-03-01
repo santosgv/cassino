@@ -306,7 +306,7 @@ def convert_credits(request):
 
     return JsonResponse({"error": "Método inválido"}, status=405)
 
-@login_required
+
 def purchase_success(request, package_name):
     """ Processa a compra bem-sucedida e adiciona os créditos ao usuário """
 
@@ -334,13 +334,13 @@ def purchase_success(request, package_name):
     messages.success(request, f"Compra bem-sucedida! Você recebeu {total_credits} créditos.")
     return redirect("creditos")
 
-@login_required
+
 def purchase_failure(request):
     """ Exibe uma mensagem de falha na compra """
     messages.error(request, "O pagamento não foi aprovado. Tente novamente.")
     return redirect("creditos")
 
-@login_required
+
 def purchase_pending(request):
     """ Exibe uma mensagem para pagamentos pendentes """
     messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
