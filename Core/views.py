@@ -11,6 +11,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.paginator import Paginator
 from .utils import  manage_risk,get_bet_amount
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 #import mercadopago
 
@@ -306,7 +307,7 @@ def convert_credits(request):
 
     return JsonResponse({"error": "Método inválido"}, status=405)
 
-
+@xframe_options_exempt
 def purchase_success(request, package_name):
     """ Processa a compra bem-sucedida e adiciona os créditos ao usuário """
 

@@ -160,7 +160,7 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = 'ALLOW-FROM https://app.monetizze.com.br'
 
 CORS_ALLOW_METHODS = [
     "DELETE",
