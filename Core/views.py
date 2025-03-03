@@ -321,9 +321,6 @@ def purchase_success(request, package_name):
     package = PACKAGES[package_name]
     user = get_object_or_404(User,email=email)
 
-    user.backend = "django.contrib.auth.backends.ModelBackend"
-    login(request, user)
-
     user_credit, created = UserCredit.objects.get_or_create(user=user)
 
     # Adicionando os créditos + bônus ao saldo do usuário
