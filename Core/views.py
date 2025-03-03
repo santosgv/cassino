@@ -1,9 +1,10 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.http import JsonResponse
 import random
 from django.contrib.auth.decorators import login_required
 from .models import UserCredit,TransactionHistory
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from accounts.models import Withdrawal
 from django.contrib import messages
 import json
@@ -314,9 +315,16 @@ def purchase_success(request, package_name):
     if package_name not in PACKAGES:
         messages.error(request, "Pacote inválido!")
         return redirect("creditos")
+    
+    email = request.GET.get("e")
 
     package = PACKAGES[package_name]
-    user_credit, created = UserCredit.objects.get_or_create(user=request.user)
+    user = get_object_or_404(User,email=email)
+
+    user.backend = "django.contrib.auth.backends.ModelBackend"
+    login(request, user)
+
+    user_credit, created = UserCredit.objects.get_or_create(user=user)
 
     # Adicionando os créditos + bônus ao saldo do usuário
     total_credits = package["credits"] + package["bonus"]
