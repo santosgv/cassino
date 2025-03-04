@@ -71,7 +71,7 @@ def user_logout(request):
     return redirect('/')  # Redireciona para a página inicial
 
 
-@login_required
+@login_required(login_url='/login/')
 def request_withdrawal(request):
     affiliate = Affiliate.objects.get(user=request.user)
 
@@ -160,13 +160,13 @@ def deny_withdrawal(request, withdrawal_id):
 
     return redirect("/manage_withdrawals")
 
-@login_required
+@login_required(login_url='/login/')
 def check_unread_alerts(request):
     unread_count = Alert.objects.filter(user=request.user, is_read=False).count()
     return render(request, 'accounts/partials/notification_count.html', {'unread_count': unread_count})
 
 
-@login_required
+@login_required(login_url='/login/')
 def user_alerts(request):
     alerts_list = Alert.objects.filter(user=request.user).order_by('-created_at')
     
@@ -176,7 +176,7 @@ def user_alerts(request):
 
     return render(request, 'accounts/alerts.html', {'alerts': alerts, })
 
-@login_required
+@login_required(login_url='/login/')
 def mark_alert_as_read(request, alert_id):
     alert = get_object_or_404(Alert, id=alert_id, user=request.user)
     alert.is_read = True

@@ -37,13 +37,13 @@ CREDIT_PACKAGES = {
     100.00: 450
 }
 
-@login_required 
+@login_required(login_url='/login/') 
 def jogo(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
 
     return render(request, 'slot_machine/index.html', {'credits': user_credit.credits})
 
-@login_required 
+@login_required(login_url='/login/') 
 def spin(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
@@ -108,12 +108,12 @@ def spin(request):
 
     return JsonResponse({'results': results, 'message': message, 'credits': user_credit.credits})
 
-@login_required  
+@login_required(login_url='/login/')
 def roleta(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'roleta/index.html', {'credits': user_credit.credits})
 
-@login_required
+@login_required(login_url='/login/')
 def spin_roulette(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Usuário não autenticado.'}, status=401)
@@ -170,18 +170,18 @@ def spin_roulette(request):
         'credits': user_credit.credits
     })
 
-@login_required
+@login_required(login_url='/login/')
 def aviator(request):
     return render(request, 'aviator/index.html')
 
-@login_required
+@login_required(login_url='/login/')
 def creditos(request):
     user_credit,created = UserCredit.objects.get_or_create(user=request.user)
     return render(request, 'vendas.html',{'credits': user_credit.credits,
                                             "packages": PACKAGES,
                                             })
 
-@login_required 
+@login_required(login_url='/login/')
 def convert_credits(request):
     if not request.user.is_authenticated:
         messages.error(request,'Usuário não autenticado.')
@@ -355,7 +355,7 @@ def purchase_pending(request):
     messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
     return redirect("creditos")
 
-@login_required
+@login_required(login_url='/login/')
 def request_pix_withdrawal(request):
     withdrawals_all = Withdrawal.objects.filter(user=request.user).order_by('-id')
 
