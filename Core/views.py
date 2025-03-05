@@ -356,7 +356,6 @@ def purchase_pending(request):
     return redirect("creditos")
 
 def redirecionamento_mensagem(request):
-    messages.success(request, f"Compra bem-sucedida!")
     return render(request,"redirecionamento.html")
 
 @login_required(login_url='/login/')
