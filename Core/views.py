@@ -341,7 +341,7 @@ def purchase_success(request, package_name):
     )
 
     messages.success(request, f"Compra bem-sucedida! Você recebeu {total_credits} créditos.")
-    return redirect("creditos")
+    return redirect("redirecionamento_mensagem")
 
 
 def purchase_failure(request):
@@ -354,6 +354,10 @@ def purchase_pending(request):
     """ Exibe uma mensagem para pagamentos pendentes """
     messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
     return redirect("creditos")
+
+def redirecionamento_mensagem(request):
+    messages.success(request, f"Compra bem-sucedida!")
+    return render(request,"redirecionamento.html")
 
 @login_required(login_url='/login/')
 def request_pix_withdrawal(request):
