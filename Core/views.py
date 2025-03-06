@@ -355,6 +355,7 @@ def purchase_pending(request):
     messages.warning(request, "Seu pagamento está em análise. Assim que for aprovado, seus créditos serão adicionados.")
     return redirect("creditos")
 
+@xframe_options_exempt
 def redirecionamento_mensagem(request):
     return render(request,"redirecionamento.html")
 
